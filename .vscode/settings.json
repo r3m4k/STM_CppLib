@@ -2,7 +2,6 @@
     "telemetry.telemetryLevel": "off",
     "files.associations": {
         "cstdint": "cpp",
-        "sensors.h": "c",
         "cmath": "cpp",
         "cctype": "cpp",
         "compare": "cpp",
@@ -16,7 +15,6 @@
         "new": "cpp",
         "*.tcc": "cpp",
         "typeinfo": "cpp",
-        "leds.h": "c",
         "cstring": "cpp",
         "stdint.h": "c",
         "types.h": "c"

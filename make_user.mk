@@ -11,17 +11,12 @@ USER_DEFINES =
 # Исходные файлы пользователя
 # ----------------------------
 
-USER_DIR = src
+USER_DIR = user/src
 
 USER_SRC_C = \
-${USER_DIR}/Sensors.c \
-${USER_DIR}/_write.c
 
 USER_SRC_CPP = \
 ${USER_DIR}/main.cpp \
-${USER_DIR}/Drv_Gpio.cpp \
-${USER_DIR}/Drv_Uart.cpp \
-${USER_DIR}/COM_IO.cpp
  
 # ----------------------------
 # Объектные файлы пользователя

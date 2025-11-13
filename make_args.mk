@@ -61,8 +61,8 @@ GPP_FLAGS = -std=gnu++11 ${COMPILER_FLAGS} -c -fno-exceptions -fno-rtti -fno-use
 INCLUDES = \
 -I"${GCC_PLACE}arm-none-eabi/include" \
 -I"include" \
--I"src" \
--I"src/cpp_sensors" \
+-I"user" \
+-I"user/inc" \
 -I"system/include" \
 -I"system/include/cmsis" \
 -I"system/include/stm32f3-stdperiph" \
