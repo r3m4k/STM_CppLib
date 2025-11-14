@@ -4,6 +4,8 @@
 /* Includes HPP files --------------------------------------------------------*/
 #include "Timer.hpp"
 #include "Leds.hpp"
+#include "L3GD20.hpp"
+#include "LSM303DLHC.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -40,6 +42,8 @@ unsigned int stage = InfiniteSending;
 
 Timer4 timer;
 Leds leds;
+L3GD20 gyro_sensor;
+LSM303DLHC acc_sensor;
 
 // -------------------------------------------------------------------------------
 
@@ -56,19 +60,18 @@ int main()
     InitAll();             
     
     // Поморгаем светодиодами после успешной инициализации
-    // leds.Toggle_Leds();
+    leds.Toggle_Leds();
     // leds.LedsOn();
-
+    Delay(1000);
     timer.Start();
-
-    // TIM_Cmd(TIM4, ENABLE);
 
     // Основной цикл программы
     while (true)
     {
         switch (stage){
         case InfiniteSending:
-
+            gyro_sensor.ReadData();
+            acc_sensor.ReadData();
             break;
         }
     }
@@ -78,24 +81,27 @@ int main()
 // Инициализация оборудования
 void InitAll(){
     leds.Init();
+    gyro_sensor.Init();
+    acc_sensor.Init();
 
     // Настройка таймера
     timer.TimPrescaler = 7200;  // Частота - 1 кГц
     timer.TimPeriod = 20000;    // Период генерации прерывания - 2 с
-    timer.InitTim4();   // Необходимо вызывать ПОСЛЕ установки параметров
-    // timer.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
+    timer.callback_func = UserTIM4_IRQHandler;
+    timer.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
 }
 
 // -------------------------------------------------------------------------------
 
 void TIM4_IRQHandler(void)
 {
-    // leds.Toggle_Leds();
+    timer.CallBack();
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
+}
 
+void UserTIM4_IRQHandler(){
     leds.ChangeLedStatus(LED6);
     leds.ChangeLedStatus(LED7);
-
 }
 
 // -------------------------------------------------------------------------------

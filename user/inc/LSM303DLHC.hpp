@@ -3,7 +3,7 @@
 #define __LSM303DLHC_HPP
 
 /* Includes ------------------------------------------------------------------*/
-#include <_stdint.h>
+#include <stdint.h>
 #include "stm32f30x.h"
 #include "stm32f3_discovery_lsm303dlhc.h"
 #include "triaxial_data.hpp"
@@ -102,7 +102,7 @@ public:
     void ReadAcc(){
         int16_t pnRawData[3];
         uint8_t ctrlx[2];
-        uint8_t buffer[6] = {0.0f};
+        uint8_t buffer[6] = {0};
         uint8_t cDivider;
         float LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_2g;
 
@@ -212,18 +212,18 @@ public:
         }
 
         // x_coord
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_H_M, high_bit, 1);
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_L_M, low_bit,  1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_H_M, &high_bit, 1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_L_M, &low_bit,  1);
         mag_data.x_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / Magn_Sensitivity_XY;
         
         // y_coord
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_H_M, high_bit, 1);
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_M, low_bit,  1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_H_M, &high_bit, 1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_M, &low_bit,  1);
         mag_data.y_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / Magn_Sensitivity_XY;
 
         // z_coord
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_M, high_bit, 1);
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_M, low_bit,  1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_M, &high_bit, 1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_M, &low_bit,  1);
         mag_data.z_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / Magn_Sensitivity_Z;
 
     }
@@ -231,11 +231,11 @@ public:
     void ReadTemp(){
         uint8_t high_bit, low_bit;
 
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_H_M, high_bit, 1);
-        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_L_M, low_bit,  1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_H_M, &high_bit, 1);
+        LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_TEMP_OUT_L_M, &low_bit,  1);
 
         temperature = static_cast<float>(static_cast<int16_t>(static_cast<uint16_t>(high_bit << 8) + low_bit) >> 4);
     }
-}
+};
 
 #endif /*   __LSM303DLHC_HPP   */

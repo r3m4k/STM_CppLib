@@ -3,7 +3,7 @@
 #define __L3GD20_HPP
 
 /* Includes ------------------------------------------------------------------*/
-#include <_stdint.h>
+#include <stdint.h>
 #include "stm32f30x.h"
 #include "stm32f3_discovery_l3gd20.h"
 #include "triaxial_data.hpp"
@@ -65,21 +65,21 @@ public:
         uint8_t low_bit = 0;
         
         // x_coord
-        L3GD20_Read(high_bit, L3GD20_OUT_X_H_ADDR, 1);
-        L3GD20_Read(low_bit,  L3GD20_OUT_X_L_ADDR, 1);
+        L3GD20_Read(&high_bit, L3GD20_OUT_X_H_ADDR, 1);
+        L3GD20_Read(&low_bit,  L3GD20_OUT_X_L_ADDR, 1);
         gyro_data.x_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / gyro_multiplier;
         
         // y_coord
-        L3GD20_Read(high_bit, L3GD20_OUT_Y_H_ADDR, 1);
-        L3GD20_Read(low_bit,  L3GD20_OUT_Y_L_ADDR, 1);
+        L3GD20_Read(&high_bit, L3GD20_OUT_Y_H_ADDR, 1);
+        L3GD20_Read(&low_bit,  L3GD20_OUT_Y_L_ADDR, 1);
         gyro_data.y_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / gyro_multiplier;
         
         // z_coord
-        L3GD20_Read(high_bit, L3GD20_OUT_Z_H_ADDR, 1);
-        L3GD20_Read(low_bit,  L3GD20_OUT_Z_L_ADDR, 1);
+        L3GD20_Read(&high_bit, L3GD20_OUT_Z_H_ADDR, 1);
+        L3GD20_Read(&low_bit,  L3GD20_OUT_Z_L_ADDR, 1);
         gyro_data.z_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / gyro_multiplier;
     }
 
-}
+};
 
 #endif /*   __L3GD20_HPP   */

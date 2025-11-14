@@ -59,17 +59,15 @@ public:
         NVIC_Init(&NVIC_InitStructure);
 
         /* Set the timer configuration */
+        TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
         TIM_TimeBaseStructure.TIM_Period = TimPeriod;
         TIM_TimeBaseStructure.TIM_Prescaler = TimPrescaler - 1;
-        TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-        TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-        TIM_TimeBaseStructure.TIM_RepetitionCounter = 0x0000;
         TIM_TimeBaseInit(TIMx, &TIM_TimeBaseStructure);
 
-        TIM_ITConfig(TIMx, TIM_IT_Update, DISABLE);
     }
-
+    
     void Start() {
+        TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
         TIM_Cmd(TIMx, ENABLE);
     }
     void CallBack(){

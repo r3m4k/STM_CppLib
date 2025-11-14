@@ -88,6 +88,7 @@
 
 void InitAll();
 void TIM4_IRQHandler(void);
+void UserTIM4_IRQHandler();
 void UserEP3_OUT_Callback(uint8_t *buffer);
 
 void Delay(__IO uint32_t nTime);
