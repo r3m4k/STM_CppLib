@@ -48,11 +48,11 @@ public:
         return TriaxialData(x_coord - other.x_coord, y_coord - other.y_coord, z_coord - other.z_coord);
     }
 
-    TriaxialData operator*(double scalar) const {
+    TriaxialData operator*(float scalar) const {
         return TriaxialData(x_coord * scalar, y_coord * scalar, z_coord * scalar);
     }
 
-    TriaxialData operator/(double scalar) const {
+    TriaxialData operator/(float scalar) const {
         return TriaxialData(x_coord / scalar, y_coord / scalar, z_coord / scalar);
     }
 

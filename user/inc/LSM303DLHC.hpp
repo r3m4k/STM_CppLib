@@ -171,7 +171,6 @@ public:
     }
 
     void ReadMag(){
-        uint8_t buffer[6] = {0};
         uint8_t CTRLB = 0;
         uint16_t Magn_Sensitivity_XY, Magn_Sensitivity_Z;
         uint8_t high_bit, low_bit;
