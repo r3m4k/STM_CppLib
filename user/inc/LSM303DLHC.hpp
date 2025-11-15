@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "stm32f30x.h"
 #include "stm32f3_discovery_lsm303dlhc.h"
-#include "triaxial_data.hpp"
+#include "TriaxialData.hpp"
 
 /* Defines -------------------------------------------------------------------*/
 #define USE_MAGNETIC_SENSOR

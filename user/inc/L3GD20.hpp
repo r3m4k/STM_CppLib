@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "stm32f30x.h"
 #include "stm32f3_discovery_l3gd20.h"
-#include "triaxial_data.hpp"
+#include "TriaxialData.hpp"
 
 /* Defines -------------------------------------------------------------------*/
 #define LSM_Acc_Sensitivity_2g     (float)     1.0f            /*!< accelerometer sensitivity with 2 g full scale [LSB/mg] */

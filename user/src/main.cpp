@@ -6,6 +6,7 @@
 #include "Leds.hpp"
 #include "L3GD20.hpp"
 #include "LSM303DLHC.hpp"
+#include "Packages.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -44,6 +45,7 @@ Timer4 timer;
 Leds leds;
 L3GD20 gyro_sensor;
 LSM303DLHC acc_sensor;
+GyronavtPackage package;
 
 // -------------------------------------------------------------------------------
 
@@ -70,8 +72,13 @@ int main()
     {
         switch (stage){
         case InfiniteSending:
+            // Считаем показания датчика
             gyro_sensor.ReadData();
             acc_sensor.ReadData();
+            
+            // Обновим данные посылки
+            package.UpdateData();
+
             break;
         }
     }
