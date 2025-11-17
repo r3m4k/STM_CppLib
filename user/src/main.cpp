@@ -6,7 +6,7 @@
 #include "Leds.hpp"
 #include "L3GD20.hpp"
 #include "LSM303DLHC.hpp"
-#include "Packages.hpp"
+#include "GyronavtPackage.hpp"
 #include "ComPort.hpp"
 
 // ----------------------------------------------------------------------------
@@ -53,21 +53,29 @@ __user_pHandler __user_vector_table[IST_VECTORS_NUM] = {0};
 // ----------------------------------------------------------------------------
 
 // Стадии программы
-enum Stages{InfiniteSending};
-unsigned int stage = InfiniteSending;
+enum class ProgramStages{InfiniteSending};
+
+// ----------------------------------------------------------------------------
 
 // Периферия
-Timer3 timer3;
-Timer4 timer4;
-Leds leds;
-L3GD20 gyro_sensor;
-LSM303DLHC acc_sensor;
+Timer3 timer3;          // Основной таймер, запускающий чтение и отправку данных 
+Timer4 timer4;          // Таймер для мерцаний светодиодом
+Leds leds;              // Светодиоды на плате
+L3GD20 gyro_sensor;     // Встроенный гироскоп
+LSM303DLHC acc_sensor;  // Встроенный датчик с акселерометром, магнитным и
+                        // температурным датчиками
+
+// ----------------------------------------------------------------------------
 
 // Интерфейсы связи
 ComPort com_port;
 
+// ----------------------------------------------------------------------------
+
+uint32_t tick_counter = 0;      // Счётчик тиков основного таймера
 
 // ----------------------------------------------------------------------------
+
 
 int main()
 {
@@ -89,15 +97,17 @@ int main()
     
     // ##########################
 
-    GyronavtPackage package;
-    
+    GyronavtPackage gyronavt_package;               // Пакет данных в формате "Гиронавт"
+    uint32_t current_tick = 0;                      // Текущий тик основного таймера
+    auto stage = ProgramStages::InfiniteSending;    // Стадия программы
+
     // Инициализируем всё оборудования
     InitAll();             
     
     // Поморгаем светодиодами после успешной инициализации
     leds.Toggle_Leds();
-    // leds.LedsOn();
-    Delay(1000);
+
+    // Запустим таймеры
     timer3.Start();
     timer4.Start();
 
@@ -105,13 +115,25 @@ int main()
     while (true)
     {
         switch (stage){
-        case InfiniteSending:
-            // Считаем показания датчика
-            gyro_sensor.ReadData();
-            acc_sensor.ReadData();
-            
-            // Обновим данные посылки
-            package.UpdateData();
+        case ProgramStages::InfiniteSending:
+            // if (current_tick != tick_counter){
+                leds.LedOn(LED9);
+
+                current_tick = tick_counter;
+
+                // Считаем показания датчика
+                gyro_sensor.ReadData();
+                acc_sensor.ReadData();
+                
+                // Обновим данные посылки
+                gyronavt_package.UpdateData();
+
+                leds.LedOff(LED9);
+
+                // Отправим пакет данных по интерфейсам связи
+                // com_port.SendPackage(gyronavt_package);
+                
+            // }
 
             break;
         }
@@ -127,14 +149,14 @@ void InitAll(){
     // com_port.Init();
 
     // Настройка таймера для начала сбора данных
-    timer3.TimPrescaler = 7200;  // Частота - 10 кГц
-    timer3.TimPeriod = 25;       // Период генерации прерывания - 2,5 мс = 400Гц 
+    timer3.TimPrescaler = Prescaller_10kHz;     // Частота - 10 кГц
+    timer3.TimPeriod = 25;                      // Период генерации прерывания - 2,5 мс = 400Гц 
     timer3.callback_func = UserTIM3_IRQHandler;
     timer3.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
 
     // Настройка таймера для мерцания светодиодами
-    timer4.TimPrescaler = 7200;  // Частота - 10 кГц
-    timer4.TimPeriod = 20000;    // Период генерации прерывания - 2 с
+    timer4.TimPrescaler = Prescaller_10kHz;     // Частота - 10 кГц
+    timer4.TimPeriod = 20000;                   // Период генерации прерывания - 2 с
     timer4.callback_func = UserTIM4_IRQHandler;
     timer4.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
 }
@@ -147,6 +169,7 @@ void TIM3_IRQHandler(void)
 }
 
 void UserTIM3_IRQHandler(){
+    tick_counter += 1;
     leds.ChangeLedStatus(LED8);
 }
 

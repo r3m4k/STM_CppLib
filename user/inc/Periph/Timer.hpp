@@ -11,8 +11,12 @@
 #include "stm32f30x_misc.h"
 #include "stm32f30x_tim.h"
 
+#include "Periphery.hpp"
+
 /* Defines -------------------------------------------------------------------*/
-#define PeriphIRQnBase          16      // Смещение начала прерываний периферии
+#define     Prescaller_1kHz         72000
+#define     Prescaller_10kHz        7200
+#define     Prescaller_100kHz       720
 
 /* Typedef -------------------------------------------------------------------*/
 typedef void (*RCC_APBPeriphClockCmd_Typedef)(uint32_t, FunctionalState);

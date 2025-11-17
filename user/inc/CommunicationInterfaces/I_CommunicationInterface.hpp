@@ -3,7 +3,7 @@
 #define __I_COMMUNICATION_INTERFACE_HPP
 
 /* Includes ------------------------------------------------------------------*/
-#include "Packages.hpp"
+#include "BasePackage.hpp"
 
 /* Defines -------------------------------------------------------------------*/
 

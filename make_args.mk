@@ -7,7 +7,7 @@
 # Зададим её тут, чтобы при запуске makefile из командной строки не задавать её
 SYSTEM := windows	
 
-PROGRAM_NAME = STM_ACC_GIRO_FILTERED
+PROGRAM_NAME := STM_PROJECT
 
 # Название итогового исполняемого файла
 BINARY = ${PROGRAM_NAME}.elf
@@ -63,8 +63,9 @@ INCLUDES = \
 -I"include" \
 -I"user" \
 -I"user/inc" \
--I"user/inc/Packages" \
+-I"user/inc/Common" \
 -I"user/inc/CommunicationInterfaces" \
+-I"user/inc/Packages" \
 -I"user/inc/Periph" \
 -I"system/include" \
 -I"system/include/cmsis" \

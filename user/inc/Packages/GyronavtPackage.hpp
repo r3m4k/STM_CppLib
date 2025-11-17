@@ -10,10 +10,16 @@
 #include "LSM303DLHC.hpp"
 
 /* Defines -------------------------------------------------------------------*/
-#define AccCoefficient      1
-#define GyroCoefficient     1
-#define MagCoefficient      1
+#define Header_FirstBit     0xAA
+#define Header_SecondBit    0xBB
+#define PackageType         0xCC
+
+#define AccCoefficient      100
+#define GyroCoefficient     100
+#define MagCoefficient      100
+
 #define BarConst            0xBA
+#define DefaultStatus       0xDD
 
 #define GyronavtPackageLen  33
 #define GyronavtHeaderLen   4
@@ -29,6 +35,13 @@
 /* Global variables ----------------------------------------------------------*/
 extern L3GD20       gyro_sensor;
 extern LSM303DLHC   acc_sensor;
+extern uint32_t     tick_counter;
+
+// -----------------------------------------------------------------------------
+
+enum class PackageStatus{
+    default_status = DefaultStatus,
+};
 
 // -----------------------------------------------------------------------------
 // Посылка, согласно протоколу Гиронавт
@@ -36,19 +49,22 @@ class GyronavtPackage: public BasePackage{
     uint8_t data_arr[GyronavtPackageLen] = {0};
 
 public:
-    uint32_t time =  0;
-	uint8_t status = 0;
+    uint32_t time;
+	uint8_t status;
     TriaxialData acc_data, gyro_data, mag_data;
-    float bar = 0.0f;
+    float bar;
 
-    GyronavtPackage(){
+    GyronavtPackage(): 
+        time(0), 
+        status(static_cast<uint8_t>(PackageStatus::default_status)), 
+        bar(BarConst){
             len = GyronavtPackageLen;
             data_ptr = data_arr;
 
-            data_arr[0] = 0xAA;  // Sync byte 1
-            data_arr[1] = 0xBB;  // Sync byte 2
+            data_arr[0] = Header_FirstBit;
+            data_arr[1] = Header_SecondBit;
             data_arr[2] = GyronavtPackageLen;
-            data_arr[3] = 0x01;  // Packet type
+            data_arr[3] = PackageType;
     }
 
     uint8_t CountControlSum() override {
@@ -56,13 +72,13 @@ public:
     }
     
     void UpdateData() override {
+        time = tick_counter;
         acc_data = acc_sensor.acc_data;
         gyro_data = gyro_sensor.gyro_data;
         mag_data = acc_sensor.mag_data;
     }
 
     void DataPackaging() override {
-        // uint16_t tmp;
         
         // -------------------------------------
         // Заполним данные времени
