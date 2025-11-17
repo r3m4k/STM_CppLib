@@ -87,12 +87,18 @@
 #endif 
 
 void InitAll();
+
+void TIM3_IRQHandler(void);
+void UserTIM3_IRQHandler();
+
 void TIM4_IRQHandler(void);
 void UserTIM4_IRQHandler();
+
 void UserEP3_OUT_Callback(uint8_t *buffer);
 
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);
+
 uint32_t L3GD20_TIMEOUT_UserCallback(void);
 uint32_t LSM303DLHC_TIMEOUT_UserCallback(void);
 

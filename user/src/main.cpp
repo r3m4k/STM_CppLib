@@ -7,6 +7,7 @@
 #include "L3GD20.hpp"
 #include "LSM303DLHC.hpp"
 #include "Packages.hpp"
+#include "ComPort.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -56,10 +57,15 @@ enum Stages{InfiniteSending};
 unsigned int stage = InfiniteSending;
 
 // Периферия
-Timer4 timer;
+Timer3 timer3;
+Timer4 timer4;
 Leds leds;
 L3GD20 gyro_sensor;
 LSM303DLHC acc_sensor;
+
+// Интерфейсы связи
+ComPort com_port;
+
 
 // ----------------------------------------------------------------------------
 
@@ -67,13 +73,14 @@ int main()
 {
     __disable_irq();
 
-    // Загрузим собственную таблицу прерываний
-    for(uint8_t i = 0; i < IST_VECTORS_NUM; i++){
-        __user_vector_table[i] = __isr_vectors[i];
-    }
+    // // Загрузим собственную таблицу прерываний
+    // for(uint8_t i = 0; i < IST_VECTORS_NUM; i++){
+    //     __user_vector_table[i] = __isr_vectors[i];
+    // }
 
-    SCB->VTOR = (uint32_t)__user_vector_table;
-    __DSB();
+    // SCB->VTOR = (uint32_t)__user_vector_table;
+    // __DSB();
+
     __enable_irq();
 
 	RCC_GetClocksFreq(&RCC_Clocks);
@@ -91,7 +98,8 @@ int main()
     leds.Toggle_Leds();
     // leds.LedsOn();
     Delay(1000);
-    timer.Start();
+    timer3.Start();
+    timer4.Start();
 
     // Основной цикл программы
     while (true)
@@ -116,20 +124,37 @@ void InitAll(){
     leds.Init();
     gyro_sensor.Init();
     acc_sensor.Init();
+    // com_port.Init();
 
-    // Настройка таймера
-    timer.TimPrescaler = 7200;  // Частота - 1 кГц
-    timer.TimPeriod = 20000;    // Период генерации прерывания - 2 с
-    timer.callback_func = UserTIM4_IRQHandler;
-    timer.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
+    // Настройка таймера для начала сбора данных
+    timer3.TimPrescaler = 7200;  // Частота - 10 кГц
+    timer3.TimPeriod = 25;       // Период генерации прерывания - 2,5 мс = 400Гц 
+    timer3.callback_func = UserTIM3_IRQHandler;
+    timer3.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
+
+    // Настройка таймера для мерцания светодиодами
+    timer4.TimPrescaler = 7200;  // Частота - 10 кГц
+    timer4.TimPeriod = 20000;    // Период генерации прерывания - 2 с
+    timer4.callback_func = UserTIM4_IRQHandler;
+    timer4.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
+}
+
+// -------------------------------------------------------------------------------
+
+void TIM3_IRQHandler(void)
+{
+    timer3.CallBack();
+}
+
+void UserTIM3_IRQHandler(){
+    leds.ChangeLedStatus(LED8);
 }
 
 // -------------------------------------------------------------------------------
 
 void TIM4_IRQHandler(void)
 {
-    timer.CallBack();
-    TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
+    timer4.CallBack();
 }
 
 void UserTIM4_IRQHandler(){

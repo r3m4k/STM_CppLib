@@ -1,9 +1,10 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __PACKAGES_HPP
-#define __PACKAGES_HPP
+#ifndef __GYRONAVT_PACKAGE_HPP
+#define __GYRONAVT_PACKAGE_HPP
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
+#include "BasePackage.hpp"
 #include "TriaxialData.hpp"
 #include "L3GD20.hpp"
 #include "LSM303DLHC.hpp"
@@ -28,21 +29,6 @@
 /* Global variables ----------------------------------------------------------*/
 extern L3GD20       gyro_sensor;
 extern LSM303DLHC   acc_sensor;
-
-// -----------------------------------------------------------------------------
-// Класс для описания базового пакета информации
-class BasePackage{
-public:
-    uint8_t *data_ptr;
-    uint8_t len;
-
-    BasePackage(): data_ptr(nullptr), len(0) {}
-    ~BasePackage(){};
-
-    virtual uint8_t CountControlSum() = 0;
-    virtual void UpdateData() = 0;
-    virtual void DataPackaging() = 0;
-};
 
 // -----------------------------------------------------------------------------
 // Посылка, согласно протоколу Гиронавт
@@ -140,4 +126,4 @@ public:
 };
 
 
-#endif /*   __PACKAGES_HPP   */
+#endif /*   __GYRONAVT_PACKAGE_HPPs   */

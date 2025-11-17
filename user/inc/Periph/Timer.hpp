@@ -77,16 +77,41 @@ public:
     void CallBack(){
         if (callback_func){
             callback_func();
-            TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
-
+            TIM_ClearITPendingBit(TIMx, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
         }
     }
 };
 
 // -----------------------------------------------------------------------------
-// Базовый таймер
-class Timer4: public BaseTimer{
 
+class GeneralPurposeTimer: public BaseTimer{
+public:
+    GeneralPurposeTimer(){
+        APBPeriphClockCmd = RCC_APB1PeriphClockCmd;
+    }
+};
+
+// -----------------------------------------------------------------------------
+
+class Timer2: public GeneralPurposeTimer{
+public:
+    Timer2(){
+        TIMx = TIM2;
+        RCC_APBPeriph_TIMx = RCC_APB1Periph_TIM2;
+        TIM_IRQn = TIM2_IRQn;
+    }
+};
+
+class Timer3: public GeneralPurposeTimer{
+public:
+    Timer3(){
+        TIMx = TIM3;
+        RCC_APBPeriph_TIMx = RCC_APB1Periph_TIM3;
+        TIM_IRQn = TIM3_IRQn;
+    }
+};
+
+class Timer4: public GeneralPurposeTimer{
 public:
     Timer4(){
         APBPeriphClockCmd = RCC_APB1PeriphClockCmd;

@@ -63,6 +63,9 @@ INCLUDES = \
 -I"include" \
 -I"user" \
 -I"user/inc" \
+-I"user/inc/Packages" \
+-I"user/inc/CommunicationInterfaces" \
+-I"user/inc/Periph" \
 -I"system/include" \
 -I"system/include/cmsis" \
 -I"system/include/stm32f3-stdperiph" \
