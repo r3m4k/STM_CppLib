@@ -84,10 +84,10 @@
         {
             "type": "shell",
             "label": "Загрузить программу через OPENOCD",
-            "command": "cd ${config:myProject.openOCD_scripts_dir};${config:myProject.openOCD_exe} -f ${config:myProject.stm32f3discovery_cfg_path} -c 'program ${config:myProject.project_dir}/Debug_Win/${config:myProject.project_name}.elf verify reset exit';cd ${workspaceFolder}",
+            "command": "${config:myProject.openOCD_exe} -f ${config:myProject.stm32f3discovery_cfg_path} -c 'program ${config:myProject.project_dir}/Debug_Win/${config:myProject.project_name}.elf verify reset exit'",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${config:myProject.openOCD_scripts_dir}"
             },
             "problemMatcher": [],
             "group": {
