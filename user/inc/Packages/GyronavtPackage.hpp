@@ -47,13 +47,12 @@ enum class PackageStatus{
 // Посылка, согласно протоколу Гиронавт
 class GyronavtPackage: public BasePackage{
     uint8_t data_arr[GyronavtPackageLen] = {0};
-
-public:
     uint32_t time;
 	uint8_t status;
     TriaxialData acc_data, gyro_data, mag_data;
     float bar;
 
+public:
     GyronavtPackage(): 
         time(0), 
         status(static_cast<uint8_t>(PackageStatus::default_status)), 
@@ -66,23 +65,27 @@ public:
             data_arr[2] = GyronavtPackageLen;
             data_arr[3] = PackageType;
     }
-
-    uint8_t CountControlSum() override {
-        return 0xFF;
-    }
     
     void UpdateData() override {
         time = tick_counter;
+
         acc_data = acc_sensor.acc_data;
         gyro_data = gyro_sensor.gyro_data;
         mag_data = acc_sensor.mag_data;
+
+        DataPackaging();
+    }
+    
+private:
+    uint8_t CountControlSum() override {
+        return 0xFF;
     }
 
     void DataPackaging() override {
         
         // -------------------------------------
         // Заполним данные времени
-        data_arr[TimeBaseIndex + 0] = static_cast<uint8_t>(time >> 0);      // 1 разряд
+        data_arr[TimeBaseIndex + 0] = static_cast<uint8_t>(time);           // 1 разряд
         data_arr[TimeBaseIndex + 1] = static_cast<uint8_t>(time >> 8);      // 2 разряд
         data_arr[TimeBaseIndex + 2] = static_cast<uint8_t>(time >> 16);     // 3 разряд
         data_arr[TimeBaseIndex + 3] = static_cast<uint8_t>(time >> 24);     // 4 разряд

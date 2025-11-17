@@ -10,7 +10,7 @@
 
 /* Defines -------------------------------------------------------------------*/
 #define USE_MAGNETIC_SENSOR
-#define USE_TEMPERATURE_SENSOR
+// #define USE_TEMPERATURE_SENSOR
 
 // -----------------------------------------------------------------------------
 // Класс для работы с LSM303DLHC, совмещающий в себе акселерометр, магнетометр и температурный датчик 
@@ -76,7 +76,7 @@ public:
 
 #ifdef USE_TEMPERATURE_SENSOR
         InitStruct.Temperature_Sensor = LSM303DLHC_TEMPSENSOR_ENABLE;   /*!< Temp sensor Enable */
-#elif
+#else
         InitStruct.Temperature_Sensor = LSM303DLHC_TEMPSENSOR_DISABLE;  /*!< Temp sensor Disable */
 #endif
 
@@ -227,6 +227,7 @@ public:
 
     }
 
+#ifdef USE_TEMPERATURE_SENSOR
     void ReadTemp(){
         uint8_t high_bit, low_bit;
 
@@ -235,6 +236,8 @@ public:
 
         temperature = static_cast<float>(static_cast<int16_t>(static_cast<uint16_t>(high_bit << 8) + low_bit) >> 4);
     }
+#endif /*   USE_TEMPERATURE_SENSOR   */
+
 };
 
 #endif /*   __LSM303DLHC_HPP   */
