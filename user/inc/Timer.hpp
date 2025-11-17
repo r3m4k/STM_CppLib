@@ -12,12 +12,16 @@
 #include "stm32f30x_tim.h"
 
 /* Defines -------------------------------------------------------------------*/
+#define PeriphIRQnBase          16      // Смещение начала прерываний периферии
 
 /* Typedef -------------------------------------------------------------------*/
 typedef void (*RCC_APBPeriphClockCmd_Typedef)(uint32_t, FunctionalState);
 typedef void (*CallbackFunc)(void);
 
+typedef void (* __user_pHandler)(void);
+
 /* Global variables ----------------------------------------------------------*/
+extern __user_pHandler __user_vector_table[];
 
 // -----------------------------------------------------------------------------
 // Базовый таймер
@@ -73,6 +77,8 @@ public:
     void CallBack(){
         if (callback_func){
             callback_func();
+            TIM_ClearITPendingBit(TIM4, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
+
         }
     }
 };
@@ -80,37 +86,13 @@ public:
 // -----------------------------------------------------------------------------
 // Базовый таймер
 class Timer4: public BaseTimer{
+
 public:
     Timer4(){
         APBPeriphClockCmd = RCC_APB1PeriphClockCmd;
         TIMx = TIM4;
         RCC_APBPeriph_TIMx = RCC_APB1Periph_TIM4;
-        TIM_IRQn = TIM4_IRQn;        
-    }
-
-    void InitTim4(){
-        
-        NVIC_InitTypeDef NVIC_InitStructure;
-
-        /* Enable TIM clock */
-        RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-
-        /* Enable the Tim4 Interrupt */
-        NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-        NVIC_Init(&NVIC_InitStructure);
-
-        TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-        uint16_t TIMER_PRESCALER = TimPrescaler;         
-        /* Set the default configuration */
-        TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-        TIM_TimeBaseStructure.TIM_Prescaler = TIMER_PRESCALER - 1;
-        TIM_TimeBaseStructure.TIM_Period = TimPeriod;
-        TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
-
-        TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
+        TIM_IRQn = TIM4_IRQn;
     }
 };
 

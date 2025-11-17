@@ -35,28 +35,54 @@ __IO uint8_t buttonState;
 
 
 /* Defines ------------------------------------------------------------------*/
+#define IST_VECTORS_NUM     98
+
+/* Typedef ------------------------------------------------------------------*/
+typedef void (* const pHandler)(void);
+typedef void (* __user_pHandler)(void);
 
 /* Global variables ---------------------------------------------------------*/
 
+extern pHandler __isr_vectors[];
+
+// Собственная таблица прерываний
+__attribute__((aligned(128)))    // Cortex-M4 требует выравнивание по 128 байт!
+__user_pHandler __user_vector_table[IST_VECTORS_NUM] = {0};
+
+// ----------------------------------------------------------------------------
+
+// Стадии программы
 enum Stages{InfiniteSending};
 unsigned int stage = InfiniteSending;
 
+// Периферия
 Timer4 timer;
 Leds leds;
 L3GD20 gyro_sensor;
 LSM303DLHC acc_sensor;
-GyronavtPackage package;
 
-// -------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 int main()
 {
     __disable_irq();
+
+    // Загрузим собственную таблицу прерываний
+    for(uint8_t i = 0; i < IST_VECTORS_NUM; i++){
+        __user_vector_table[i] = __isr_vectors[i];
+    }
+
+    SCB->VTOR = (uint32_t)__user_vector_table;
+    __DSB();
     __enable_irq();
 
 	RCC_GetClocksFreq(&RCC_Clocks);
 	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
 		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
+    
+    // ##########################
+
+    GyronavtPackage package;
     
     // Инициализируем всё оборудования
     InitAll();             
@@ -115,7 +141,7 @@ void UserTIM4_IRQHandler(){
 
 void UserEP3_OUT_Callback(uint8_t *buffer)
 {
-
+    buffer[0] = 0;
 }
 
 // -------------------------------------------------------------------------------
