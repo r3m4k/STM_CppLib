@@ -81,13 +81,15 @@ int main()
 {
     __disable_irq();
 
-    // // Загрузим собственную таблицу прерываний
-    // for(uint8_t i = 0; i < IST_VECTORS_NUM; i++){
-    //     __user_vector_table[i] = __isr_vectors[i];
-    // }
+    // Загрузим собственную таблицу прерываний
+    for(uint8_t i = 0; i < IST_VECTORS_NUM; i++){
+        __user_vector_table[i] = __isr_vectors[i];
+    }
 
-    // SCB->VTOR = (uint32_t)__user_vector_table;
-    // __DSB();
+    SCB->VTOR = (uint32_t)__user_vector_table;
+
+    __DSB();
+    __ISB();
 
     __enable_irq();
 
@@ -174,11 +176,6 @@ void UserTIM3_IRQHandler(){
 }
 
 // -------------------------------------------------------------------------------
-
-void TIM4_IRQHandler(void)
-{
-    timer4.CallBack();
-}
 
 void UserTIM4_IRQHandler(){
     leds.ChangeLedStatus(LED6);

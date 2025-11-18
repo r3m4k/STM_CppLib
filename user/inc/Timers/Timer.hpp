@@ -78,6 +78,7 @@ public:
         TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
         TIM_Cmd(TIMx, ENABLE);
     }
+
     void CallBack(){
         if (callback_func){
             callback_func();
@@ -116,13 +117,28 @@ public:
 };
 
 class Timer4: public GeneralPurposeTimer{
+    inline static Timer4* instance;
+
 public:
     Timer4(){
+        instance = this;
+
         APBPeriphClockCmd = RCC_APB1PeriphClockCmd;
         TIMx = TIM4;
         RCC_APBPeriph_TIMx = RCC_APB1Periph_TIM4;
         TIM_IRQn = TIM4_IRQn;
+
     }
+
+    void Init(){
+        __user_vector_table[PeriphIRQnBase + TIM_IRQn] = static_irq_handler;
+        BaseTimer::Init();
+    }
+
+    static void static_irq_handler(){
+        instance->CallBack();
+    }
+
 };
 
 #endif /*   __TIMER_HPP   */
