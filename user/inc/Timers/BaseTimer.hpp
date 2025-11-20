@@ -20,58 +20,52 @@
 #define     Prescaller_100kHz       720
 
 /* Typedef -------------------------------------------------------------------*/
-typedef void (*RCC_APBPeriphClockCmd_Typedef)(uint32_t, FunctionalState);
-typedef void (*CallbackFunc)(void);
+typedef void (*RCC_PeriphClockCmd_Typedef)(uint32_t, FunctionalState);
 
 /* Global variables ----------------------------------------------------------*/
 
 // -----------------------------------------------------------------------------
-// Базовый таймер
-class BaseTimer{
-protected:
-    TimerConfig* timer_config;      // Указатель на структуру настройки таймера
-    TIM_TypeDef* TIMx;              // Структура инициализации таймера
-    
-public:
 
-    BaseTimer(): 
-        TimPrescaler(720),          // При таком предделителе таймера получается один тик таймера на 10 мкс
-        TimPeriod(1000),            // Количество тиков таймера с частотой 10 кГц перед вызовом прерывания --> 10 мс период
-        callback_func(nullptr) {}
+namespace STM_CppLib{
 
-    ~BaseTimer(){
-        TIM_ITConfig(TIMx, TIM_IT_Update, DISABLE);
-        TIM_Cmd(TIMx, DISABLE);
-    };
+    namespace STM_Timer{
 
-    void Init(){
-        /* Init structures */
-        NVIC_InitTypeDef NVIC_InitStructure;
-        TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+        // Базовый таймер
+        class BaseTimer{
+        protected:
+            TIM_TypeDef* TIMx;      // Структура инициализации таймера. Она используется почти во всех
+                                    // функциях таймеров, так что сохраним ей, как поле базового таймера
+            
+        public:
 
-        /* Enable TIM clock */
-        APBPeriphClockCmd(RCC_APBPeriph_TIMx, ENABLE);
+            BaseTimer(){}
+            ~BaseTimer(){
+                TIM_ITConfig(TIMx, TIM_IT_Update, DISABLE);
+                TIM_Cmd(TIMx, DISABLE);
+            };
 
-        /* Enable the Timer Interrupt */
-        NVIC_InitStructure.NVIC_IRQChannel = TIM_IRQn;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-        NVIC_Init(&NVIC_InitStructure);
+            void Init(TimerConfig* timer_config){
+                /* Init structures */
+                TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
-        /* Set the timer configuration */
-        TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
-        TIM_TimeBaseStructure.TIM_Period = TimPeriod;
-        TIM_TimeBaseStructure.TIM_Prescaler = TimPrescaler - 1;
-        TIM_TimeBaseInit(TIMx, &TIM_TimeBaseStructure);
+                /* Enable TIM clock */
+                timer_config->PeriphClockCmd(timer_config->RCC_PeriphClock, ENABLE);
 
+                /* Set the timer configuration */
+                TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
+                TIM_TimeBaseStructure.TIM_Period = timer_config->TimPeriod;
+                TIM_TimeBaseStructure.TIM_Prescaler = timer_config->TimPrescaler;
+                TIM_TimeBaseInit(TIMx, &TIM_TimeBaseStructure);
+
+            }
+            
+            void Start() {
+                TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
+                TIM_Cmd(TIMx, ENABLE);
+            }
+        };
     }
-    
-    void Start() {
-        TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
-        TIM_Cmd(TIMx, ENABLE);
-    }
+}
 
-};
 
 #endif /*   __BASE_TIMER_HPP   */

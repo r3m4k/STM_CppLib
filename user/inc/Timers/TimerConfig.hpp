@@ -14,17 +14,22 @@
 /* Defines -------------------------------------------------------------------*/
 
 /* Typedef -------------------------------------------------------------------*/
-typedef void (*RCC_APBPeriphClockCmd_Typedef)(uint32_t, FunctionalState);
+typedef void (*RCC_PeriphClockCmd_Typedef)(uint32_t, FunctionalState);
 typedef void (*CallbackFunc)(void);
 
 // -----------------------------------------------------------------------------
-// Структура для настройки таймера
-struct TimerConfig{
-    RCC_APBPeriphClockCmd_Typedef APBPeriphClockCmd;    // Функция для включения тактирования
-    uint32_t RCC_APBPeriph_TIMx;    // Шина, на которой включено тактирование таймера
-    IRQn_Type TIM_IRQn;             // Номер канала прерывания
-    uint16_t TimPrescaler;          // Делитель частоты (по умолчанию 720, что соответствует частоте 10 кГц)
-    uint32_t TimPeriod;             // Период генерации прерывания в тактах (по умолчанию 1000)
-};
+namespace STM_CppLib{
+    
+    namespace STM_Timer{
+                
+    // Структура для настройки таймера
+    struct TimerConfig{
+        RCC_PeriphClockCmd_Typedef PeriphClockCmd;      // Функция для включения тактирования
+        uint32_t RCC_PeriphClock;                       // Шина, на которой включено тактирование таймера
+        uint16_t TimPrescaler;                          // Делитель частоты
+        uint32_t TimPeriod;                             // Период генерации прерывания в тактах
+    };
 
+    }
+}
 #endif /*   __TIMER_CONFIG_HPP   */

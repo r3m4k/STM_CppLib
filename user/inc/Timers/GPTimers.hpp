@@ -13,6 +13,8 @@
 
 #include "Periphery.hpp"
 #include "BaseTimer.hpp"
+#include "BaseIRQDevice.hpp"
+#include "Leds.hpp"
 
 /* Defines -------------------------------------------------------------------*/
 #define     Prescaller_1kHz         72000
@@ -20,76 +22,136 @@
 #define     Prescaller_100kHz       720
 
 /* Typedef -------------------------------------------------------------------*/
-typedef void (*RCC_APBPeriphClockCmd_Typedef)(uint32_t, FunctionalState);
+typedef void (*RCC_PeriphClockCmd_Typedef)(uint32_t, FunctionalState);
 typedef void (*CallbackFunc)(void);
 
 typedef void (* __user_pHandler)(void);
 
 /* Global variables ----------------------------------------------------------*/
 extern __user_pHandler __user_vector_table[];
+extern Leds leds;
 
 // -----------------------------------------------------------------------------
 
-class GeneralPurposeTimer: public BaseTimer{
-protected:
-    // Сделаем переменную для хранения шины тактирования static, чтобы память
-    // под неё выделилась один раз вне зависимости от количества наследуемых классов
-    inline static RCC_APBPeriphClockCmd_Typedef APBPeriphClockCmd = RCC_APB1PeriphClockCmd;
-public:
-    GeneralPurposeTimer(){}
-};
+namespace STM_CppLib{
+    
+    namespace STM_Timer{
+        
+    // -----------------------------------------------------------------------------
+    class GeneralPurposeTimer: public BaseTimer{
+    protected:
+        // Сделаем переменную для хранения шины тактирования static, чтобы память
+        // под неё выделилась один раз вне зависимости от количества наследуемых классов
+        inline static RCC_PeriphClockCmd_Typedef PeriphClockCmd = RCC_APB1PeriphClockCmd;
+    };
 
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-class Timer2: public GeneralPurposeTimer{
-public:
-    Timer2(){
-        TIMx = TIM2;
-        RCC_APBPeriph_TIMx = RCC_APB1Periph_TIM2;
-        TIM_IRQn = TIM2_IRQn;
-    }
-};
+    class Timer2: public GeneralPurposeTimer, public BaseIRQDevice<Timer2, TIM2_IRQn>{
+    public:
+        Timer2(){
+            irq_device_ptr = this;
+            TIMx = TIM2;
+        }
 
-class Timer3: public GeneralPurposeTimer{
-public:
-    Timer3(){
-        TIMx = TIM3;
-        RCC_APBPeriph_TIMx = RCC_APB1Periph_TIM3;
-        TIM_IRQn = TIM3_IRQn;
-    }
-};
+        void Init(
+            uint32_t tim_period = 1000,
+            uint16_t prescaller = Prescaller_10kHz,
+            TimerConfig* timer_config_ptr = nullptr,
+            NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr
+        ){
+            if (!timer_config_ptr){
+                TimerConfig timer_config = {
+                    .PeriphClockCmd = PeriphClockCmd,
+                    .RCC_PeriphClock = RCC_APB1Periph_TIM2,
+                    .TimPrescaler = prescaller,
+                    .TimPeriod = tim_period
+                };
 
-class Timer4: public GeneralPurposeTimer{
-    inline static Timer4* instance;
-    CallbackFunc callback_func;     // Функция для отработки прерывания
+                BaseTimer::Init(&timer_config);
+            }
+            else{   BaseTimer::Init(timer_config_ptr);   }
 
-public:
-    Timer4(){
-        instance = this;
+            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
 
-        APBPeriphClockCmd = RCC_APB1PeriphClockCmd;
-        TIMx = TIM4;
-        RCC_APBPeriph_TIMx = RCC_APB1Periph_TIM4;
-        TIM_IRQn = TIM4_IRQn;
+        }
 
-    }
-
-    void Init(){
-        __user_vector_table[PeriphIRQnBase + TIM_IRQn] = static_irq_handler;
-        BaseTimer::Init();
-    }
-
-    static void static_irq_handler(){
-        instance->CallBack();
-    }
-
-    void CallBack(){
-        if (callback_func){
-            callback_func();
+        void irq_handler(){
             TIM_ClearITPendingBit(TIMx, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
         }
-    }
+    };
 
-};
+    class Timer3: public GeneralPurposeTimer, public BaseIRQDevice<Timer3, TIM3_IRQn>{
+    public:
+        Timer3(){
+            irq_device_ptr = this;
+            TIMx = TIM3;
+        }
+
+        void Init(
+            uint32_t tim_period = 1000,
+            uint16_t prescaller = Prescaller_10kHz,
+            TimerConfig* timer_config_ptr = nullptr,
+            NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr){
+            
+            if (!timer_config_ptr){
+                TimerConfig timer_config = {
+                    .PeriphClockCmd = PeriphClockCmd,
+                    .RCC_PeriphClock = RCC_APB1Periph_TIM3,
+                    .TimPrescaler = prescaller,
+                    .TimPeriod = tim_period
+                };
+
+                BaseTimer::Init(&timer_config);
+            }
+            else{   BaseTimer::Init(timer_config_ptr);   }
+
+            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+        }
+
+        void irq_handler(){
+            TIM_ClearITPendingBit(TIMx, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
+        }
+    };
+
+    class Timer4: public GeneralPurposeTimer, public BaseIRQDevice<Timer4, TIM4_IRQn>{
+    public:
+        Timer4(){
+            irq_device_ptr = this;
+            TIMx = TIM4;
+        }
+
+        void Init(
+            uint32_t tim_period = 1000,
+            uint16_t prescaller = Prescaller_10kHz,
+            TimerConfig* timer_config_ptr = nullptr,
+            NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr
+        ){
+            if (!timer_config_ptr){
+                TimerConfig timer_config = {
+                    .PeriphClockCmd = PeriphClockCmd,
+                    .RCC_PeriphClock = RCC_APB1Periph_TIM4,
+                    .TimPrescaler = prescaller,
+                    .TimPeriod = tim_period
+                };
+
+                BaseTimer::Init(&timer_config);
+            }
+            else{   BaseTimer::Init(timer_config_ptr);   }
+
+            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+        }
+
+        void irq_handler(){
+            leds.ChangeLedStatus(LED6);
+            leds.ChangeLedStatus(LED7);
+            TIM_ClearITPendingBit(TIMx, TIM_IT_Update);     // Очистим регистр наличия прерывания от датчика
+        }
+
+    };
+
+    }
+}
+
 
 #endif /*   __TIMER_HPP   */
