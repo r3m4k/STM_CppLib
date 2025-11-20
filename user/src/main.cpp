@@ -2,7 +2,8 @@
 #include "main.h"
 
 /* Includes HPP files --------------------------------------------------------*/
-#include "Timer.hpp"
+#include "Consts.hpp"
+#include "GPTimers.hpp"
 #include "Leds.hpp"
 #include "L3GD20.hpp"
 #include "LSM303DLHC.hpp"
@@ -40,7 +41,6 @@ __IO uint8_t buttonState;
 
 /* Typedef ------------------------------------------------------------------*/
 typedef void (* const pHandler)(void);
-typedef void (* __user_pHandler)(void);
 
 /* Global variables ---------------------------------------------------------*/
 
@@ -58,11 +58,11 @@ enum class ProgramStages{InfiniteSending};
 // ----------------------------------------------------------------------------
 
 // Периферия
-Timer3 timer3;          // Основной таймер, запускающий чтение и отправку данных 
-Timer4 timer4;          // Таймер для мерцаний светодиодом
-Leds leds;              // Светодиоды на плате
-L3GD20 gyro_sensor;     // Встроенный гироскоп
-LSM303DLHC acc_sensor;  // Встроенный датчик с акселерометром, магнитным и
+STM_CppLib::STM_Timer::Timer3 timer3;          // Основной таймер, запускающий чтение и отправку данных 
+STM_CppLib::STM_Timer::Timer4 timer4;          // Таймер для мерцаний светодиодом
+STM_CppLib::Leds leds;              // Светодиоды на плате
+STM_CppLib::L3GD20 gyro_sensor;     // Встроенный гироскоп
+STM_CppLib::LSM303DLHC acc_sensor;  // Встроенный датчик с акселерометром, магнитным и
                         // температурным датчиками
 
 // ----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ int main()
     InitAll();             
     
     // Поморгаем светодиодами после успешной инициализации
-    leds.Toggle_Leds();
+    leds.ToggleLeds();
 
     // Запустим таймеры
     timer3.Start();
@@ -151,36 +151,32 @@ void InitAll(){
     // com_port.Init();
 
     // Настройка таймера для начала сбора данных
-    timer3.TimPrescaler = Prescaller_10kHz;     // Частота - 10 кГц
-    timer3.TimPeriod = 25;                      // Период генерации прерывания - 2,5 мс = 400Гц 
-    timer3.callback_func = UserTIM3_IRQHandler;
-    timer3.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
+    uint32_t tim3_period = 25;
+    timer3.Init(tim3_period);
 
     // Настройка таймера для мерцания светодиодами
-    timer4.TimPrescaler = Prescaller_10kHz;     // Частота - 10 кГц
-    timer4.TimPeriod = 20000;                   // Период генерации прерывания - 2 с
-    timer4.callback_func = UserTIM4_IRQHandler;
-    timer4.Init();   // Необходимо вызывать ПОСЛЕ установки параметров
+    uint32_t tim4_period = 20000;
+    timer4.Init(tim4_period);
 }
 
 // -------------------------------------------------------------------------------
 
-void TIM3_IRQHandler(void)
-{
-    timer3.CallBack();
-}
+// void TIM3_IRQHandler(void)
+// {
+//     timer3.CallBack();
+// }
 
-void UserTIM3_IRQHandler(){
-    tick_counter += 1;
-    leds.ChangeLedStatus(LED8);
-}
+// void UserTIM3_IRQHandler(){
+//     tick_counter += 1;
+//     leds.ChangeLedStatus(LED8);
+// }
 
-// -------------------------------------------------------------------------------
+// // -------------------------------------------------------------------------------
 
-void UserTIM4_IRQHandler(){
-    leds.ChangeLedStatus(LED6);
-    leds.ChangeLedStatus(LED7);
-}
+// void UserTIM4_IRQHandler(){
+//     leds.ChangeLedStatus(LED6);
+//     leds.ChangeLedStatus(LED7);
+// }
 
 // -------------------------------------------------------------------------------
 
