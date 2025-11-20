@@ -11,8 +11,6 @@
  *   переменную PeriphClockCmd для хранения шины тактирования всех дочерних
  *   классов
  * - Timer2, Timer3, Timer4 наследуются от GeneralPurposeTimer и BaseIRQDevice
- * - Используется CRTP (Curiously Recurring Template Pattern) для устранения
- *   виртуальных вызовов и уменьшения размера объектов
  *************************************************************************** */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -35,9 +33,6 @@
 #include "Leds.hpp"
 
 /* Defines -------------------------------------------------------------------*/
-#define     Prescaller_1kHz         7200
-#define     Prescaller_10kHz        7200
-#define     Prescaller_100kHz       720
 
 /* Global variables ----------------------------------------------------------*/
 extern __user_pHandler __user_vector_table[];
