@@ -2,6 +2,7 @@
 #include "main.h"
 
 /* Includes HPP files --------------------------------------------------------*/
+#include "Consts.hpp"
 #include "GPTimers.hpp"
 #include "Leds.hpp"
 #include "L3GD20.hpp"
@@ -40,7 +41,6 @@ __IO uint8_t buttonState;
 
 /* Typedef ------------------------------------------------------------------*/
 typedef void (* const pHandler)(void);
-typedef void (* __user_pHandler)(void);
 
 /* Global variables ---------------------------------------------------------*/
 
@@ -60,9 +60,9 @@ enum class ProgramStages{InfiniteSending};
 // Периферия
 STM_CppLib::STM_Timer::Timer3 timer3;          // Основной таймер, запускающий чтение и отправку данных 
 STM_CppLib::STM_Timer::Timer4 timer4;          // Таймер для мерцаний светодиодом
-Leds leds;              // Светодиоды на плате
-L3GD20 gyro_sensor;     // Встроенный гироскоп
-LSM303DLHC acc_sensor;  // Встроенный датчик с акселерометром, магнитным и
+STM_CppLib::Leds leds;              // Светодиоды на плате
+STM_CppLib::L3GD20 gyro_sensor;     // Встроенный гироскоп
+STM_CppLib::LSM303DLHC acc_sensor;  // Встроенный датчик с акселерометром, магнитным и
                         // температурным датчиками
 
 // ----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ int main()
     InitAll();             
     
     // Поморгаем светодиодами после успешной инициализации
-    leds.Toggle_Leds();
+    leds.ToggleLeds();
 
     // Запустим таймеры
     timer3.Start();
@@ -155,7 +155,7 @@ void InitAll(){
     timer3.Init(tim3_period);
 
     // Настройка таймера для мерцания светодиодами
-    uint32_t tim4_period = 25;
+    uint32_t tim4_period = 20000;
     timer4.Init(tim4_period);
 }
 

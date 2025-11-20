@@ -33,8 +33,8 @@
 #define ControlSumIndex     32
 
 /* Global variables ----------------------------------------------------------*/
-extern L3GD20       gyro_sensor;
-extern LSM303DLHC   acc_sensor;
+extern STM_CppLib::L3GD20       gyro_sensor;
+extern STM_CppLib::LSM303DLHC   acc_sensor;
 extern uint32_t     tick_counter;
 
 // -----------------------------------------------------------------------------

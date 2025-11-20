@@ -28,14 +28,14 @@
         "stdint.h": "c",
         "types.h": "c"
     },
-    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-g++",
+    "C_Cpp.default.intelliSenseMode": "gcc-arm",
+
     "cortex-debug.openocdPath": "openocd",
     "cortex-debug.enableTelemetry": false,
     "cortex-debug.gdbPath.linux": "/usr/bin/gdb-multiarch",
     "cortex-debug.registerUseNaturalFormat": false,
-    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-g++",
-    "C_Cpp.default.intelliSenseMode": "gcc-arm",
-
     "cortex-debug.armToolchainPath.linux": "/usr/bin",
     "cortex-debug.openocdPath.linux": "openocd",
     "cortex-debug.JLinkGDBServerPath.linux": "/usr/bin/JLinkGDBServerCLExe",
@@ -43,6 +43,7 @@
     "cortex-debug.armToolchainPath.windows": "c:\\SysGCC\\arm-eabi\\bin\\",
     "cortex-debug.gdbPath.windows": "c:\\SysGCC\\arm-eabi\\bin\\arm-none-eabi-gdb.exe",
     "cortex-debug.JLinkGDBServerPath.windows": "c:\\Program Files\\SEGGER\\JLink\\JLinkGDBServerCL.exe",
+    
     "cSpell.words": [
         "DLHC",
         "HCLK",
