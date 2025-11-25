@@ -66,7 +66,7 @@ public:
             data_arr[3] = PackageType;
     }
     
-    void UpdateData() override {
+    void UpdateData() {
         time = tick_counter;
 
         acc_data = acc_sensor.acc_data;
@@ -77,11 +77,11 @@ public:
     }
     
 private:
-    uint8_t CountControlSum() override {
+    uint8_t CountControlSum()  {
         return 0xFF;
     }
 
-    void DataPackaging() override {
+    void DataPackaging()  {
         
         // -------------------------------------
         // Заполним данные времени

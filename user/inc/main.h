@@ -88,6 +88,8 @@
 
 void InitAll();
 
+void update_package_data();
+
 void TIM3_IRQHandler(void);
 void UserTIM3_IRQHandler();
 

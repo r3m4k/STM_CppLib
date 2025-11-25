@@ -12,8 +12,8 @@
 // -----------------------------------------------------------------------------
 // Класс для описания базового пакета информации
 class BasePackage{
-    virtual void DataPackaging() = 0;
-    virtual uint8_t CountControlSum() = 0;
+    // virtual void DataPackaging() = 0;
+    // virtual uint8_t CountControlSum() = 0;
 
 public:
     uint8_t *data_ptr;
@@ -22,7 +22,7 @@ public:
     BasePackage(): data_ptr(nullptr), len(0) {}
     ~BasePackage(){};
 
-    virtual void UpdateData() = 0;
+    // virtual void UpdateData() = 0;
 
 };
 

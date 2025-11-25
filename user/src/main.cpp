@@ -9,6 +9,8 @@
 #include "LSM303DLHC.hpp"
 #include "GyronavtPackage.hpp"
 #include "ComPort.hpp"
+#include "GpioPort.hpp"
+#include "GpioPin.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -58,12 +60,21 @@ enum class ProgramStages{InfiniteSending};
 // ----------------------------------------------------------------------------
 
 // Периферия
-STM_CppLib::STM_Timer::Timer3 timer3;          // Основной таймер, запускающий чтение и отправку данных 
-STM_CppLib::STM_Timer::Timer4 timer4;          // Таймер для мерцаний светодиодом
-STM_CppLib::Leds leds;              // Светодиоды на плате
-STM_CppLib::L3GD20 gyro_sensor;     // Встроенный гироскоп
-STM_CppLib::LSM303DLHC acc_sensor;  // Встроенный датчик с акселерометром, магнитным и
-                        // температурным датчиками
+STM_CppLib::STM_Timer::Timer3 timer3;   // Основной таймер, запускающий чтение и отправку данных 
+STM_CppLib::STM_Timer::Timer4 timer4;   // Таймер для мерцаний светодиодом
+STM_CppLib::Leds leds;                  // Светодиоды на плате
+STM_CppLib::L3GD20 gyro_sensor;         // Встроенный гироскоп
+STM_CppLib::LSM303DLHC acc_sensor;      // Встроенный датчик с акселерометром, магнитным и
+                                        // температурным датчиками
+GyronavtPackage gyronavt_package;               // Пакет данных в формате "Гиронавт"
+
+// Пин Pin_PC0 используется для инициализации прерывания EXTI_Line1, настроенное
+// на перевод пина Pin_PC1 из состояние Reset в состояние Set.
+// ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
+STM_CppLib::STM_GPIO::GPIO_Pin
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>   Pin_PC0;
+STM_CppLib::STM_GPIO::GPIO_Pin_EXTI
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data>   Pin_PC1;
 
 // ----------------------------------------------------------------------------
 
@@ -99,8 +110,6 @@ int main()
     
     // ##########################
 
-    GyronavtPackage gyronavt_package;               // Пакет данных в формате "Гиронавт"
-    uint32_t current_tick = 0;                      // Текущий тик основного таймера
     auto stage = ProgramStages::InfiniteSending;    // Стадия программы
 
     // Инициализируем всё оборудования
@@ -121,17 +130,20 @@ int main()
             // if (current_tick != tick_counter){
                 leds.LedOn(LED9);
 
-                current_tick = tick_counter;
-
                 // Считаем показания датчика
                 gyro_sensor.ReadData();
                 acc_sensor.ReadData();
                 
                 // Обновим данные посылки
-                gyronavt_package.UpdateData();
+                // gyronavt_package.UpdateData();
 
                 leds.LedOff(LED9);
 
+                EXTI_GenerateSWInterrupt(EXTI_Line1);
+
+                // Pin_PC0.set_pin();
+                // Pin_PC0.reset_pin();
+                
                 // Отправим пакет данных по интерфейсам связи
                 // com_port.SendPackage(gyronavt_package);
                 
@@ -149,6 +161,8 @@ void InitAll(){
     gyro_sensor.Init();
     acc_sensor.Init();
     // com_port.Init();
+    Pin_PC0.init_pin();
+    Pin_PC1.init_pin_exti();
 
     // Настройка таймера для начала сбора данных
     uint32_t tim3_period = 25;
@@ -157,26 +171,17 @@ void InitAll(){
     // Настройка таймера для мерцания светодиодами
     uint32_t tim4_period = 20000;
     timer4.Init(tim4_period);
+
 }
 
 // -------------------------------------------------------------------------------
 
-// void TIM3_IRQHandler(void)
-// {
-//     timer3.CallBack();
-// }
+void update_package_data(){
+    leds.LedOff(LED4);
+    leds.LedOn(LED4);
 
-// void UserTIM3_IRQHandler(){
-//     tick_counter += 1;
-//     leds.ChangeLedStatus(LED8);
-// }
-
-// // -------------------------------------------------------------------------------
-
-// void UserTIM4_IRQHandler(){
-//     leds.ChangeLedStatus(LED6);
-//     leds.ChangeLedStatus(LED7);
-// }
+    gyronavt_package.UpdateData();
+}
 
 // -------------------------------------------------------------------------------
 
