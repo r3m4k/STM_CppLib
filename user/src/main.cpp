@@ -9,6 +9,8 @@
 #include "LSM303DLHC.hpp"
 #include "GyronavtPackage.hpp"
 #include "ComPort.hpp"
+#include "GpioPort.hpp"
+#include "GpioPin.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -58,12 +60,20 @@ enum class ProgramStages{InfiniteSending};
 // ----------------------------------------------------------------------------
 
 // Периферия
-STM_CppLib::STM_Timer::Timer3 timer3;          // Основной таймер, запускающий чтение и отправку данных 
-STM_CppLib::STM_Timer::Timer4 timer4;          // Таймер для мерцаний светодиодом
-STM_CppLib::Leds leds;              // Светодиоды на плате
-STM_CppLib::L3GD20 gyro_sensor;     // Встроенный гироскоп
-STM_CppLib::LSM303DLHC acc_sensor;  // Встроенный датчик с акселерометром, магнитным и
-                        // температурным датчиками
+STM_CppLib::STM_Timer::Timer3 timer3;   // Основной таймер, запускающий чтение и отправку данных 
+STM_CppLib::STM_Timer::Timer4 timer4;   // Таймер для мерцаний светодиодом
+STM_CppLib::Leds leds;                  // Светодиоды на плате
+STM_CppLib::L3GD20 gyro_sensor;         // Встроенный гироскоп
+STM_CppLib::LSM303DLHC acc_sensor;      // Встроенный датчик с акселерометром, магнитным и
+                                        // температурным датчиками
+
+// Пин Pin_PC0 используется для инициализации прерывания EXTI_Line1, настроенное
+// на перевод пина Pin_PC1 из состояние Reset в состояние Set.
+// ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
+STM_CppLib::STM_GPIO::GPIO_Pin
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>             Pin_PC0;
+STM_CppLib::STM_GPIO::GPIO_Pin
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, USE_EXTI>   Pin_PC1;
 
 // ----------------------------------------------------------------------------
 
@@ -100,7 +110,6 @@ int main()
     // ##########################
 
     GyronavtPackage gyronavt_package;               // Пакет данных в формате "Гиронавт"
-    uint32_t current_tick = 0;                      // Текущий тик основного таймера
     auto stage = ProgramStages::InfiniteSending;    // Стадия программы
 
     // Инициализируем всё оборудования
@@ -120,8 +129,6 @@ int main()
         case ProgramStages::InfiniteSending:
             // if (current_tick != tick_counter){
                 leds.LedOn(LED9);
-
-                current_tick = tick_counter;
 
                 // Считаем показания датчика
                 gyro_sensor.ReadData();
@@ -149,6 +156,8 @@ void InitAll(){
     gyro_sensor.Init();
     acc_sensor.Init();
     // com_port.Init();
+    Pin_PC0.Init();
+    Pin_PC1.Init();
 
     // Настройка таймера для начала сбора данных
     uint32_t tim3_period = 25;
@@ -157,6 +166,7 @@ void InitAll(){
     // Настройка таймера для мерцания светодиодами
     uint32_t tim4_period = 20000;
     timer4.Init(tim4_period);
+
 }
 
 // -------------------------------------------------------------------------------

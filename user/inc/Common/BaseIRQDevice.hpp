@@ -9,7 +9,6 @@
 
 /* Defines -------------------------------------------------------------------*/
 #define PeriphIRQnBase          16      // Смещение начала прерываний периферии
-#define DefaultIRQn             -1      // Дефолтное значение номера прерывания
 #define DefaultIRQChannelPreemptionPriority     0
 #define DefaultIRQChannelSubPriority            0
 
@@ -21,7 +20,7 @@ extern __user_pHandler __user_vector_table[];
 namespace STM_CppLib{
     
     // Базовый класс для работы с настройками прерывания
-    template <typename IRQDevice, IRQn_Type IRQn = DefaultIRQn>
+    template <typename IRQDevice, IRQn_Type IRQn>
     class BaseIRQDevice{
     protected:
         inline static IRQDevice* irq_device_ptr = nullptr;
@@ -44,8 +43,7 @@ namespace STM_CppLib{
         }
 
         void register_interrupt(){
-            if constexpr (IRQn != DefaultIRQn)
-                __user_vector_table[PeriphIRQnBase + IRQn] = static_irq_handler;
+            __user_vector_table[PeriphIRQnBase + IRQn] = static_irq_handler;
         }
         
         static void static_irq_handler(){

@@ -35,9 +35,6 @@
 #include "Leds.hpp"
 
 /* Defines -------------------------------------------------------------------*/
-#define     Prescaller_1kHz         7200
-#define     Prescaller_10kHz        7200
-#define     Prescaller_100kHz       720
 
 /* Global variables ----------------------------------------------------------*/
 extern __user_pHandler __user_vector_table[];
