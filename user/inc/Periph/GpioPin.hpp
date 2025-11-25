@@ -21,13 +21,14 @@ namespace STM_CppLib{
     namespace STM_GPIO{
 
     // Базовый класс для работы с пином GPIO
-    template <GPIO_Port gpio_port, uint8_t GPIO_PinSource, bool UseEXTI = NOT_USE_EXTI>
+    template <GPIO_Port gpio_port, uint8_t gpio_pin_source>
     class GPIO_Pin{
 
     public:
-        void Init(GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_OUT,
-                  GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
-                  GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr
+        void init_pin(
+            GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_OUT,
+            GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
+            GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr
         ){
             
             RCC_AHBPeriphClockCmd(get_RCC_Periph(gpio_port), ENABLE);
@@ -36,7 +37,7 @@ namespace STM_CppLib{
                 GPIO_InitTypeDef GPIO_InitStructure;
         
                 /* Configure the GPIOx pin */
-                GPIO_InitStructure.GPIO_Pin = (1U << GPIO_PinSource);
+                GPIO_InitStructure.GPIO_Pin = (1U << gpio_pin_source);
                 GPIO_InitStructure.GPIO_Mode = GPIO_Mode;
                 GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
                 GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd;
@@ -46,25 +47,34 @@ namespace STM_CppLib{
             else{   GPIO_Init(get_GPIO_type(gpio_port), GPIO_InitStructure_ptr);   }
         }
 
+        void set_pin(){
+            GPIO_SetBits(get_GPIO_type(gpio_port), (1U << gpio_pin_source));
+        }
+
+        void reset_pin(){
+            GPIO_ResetBits(get_GPIO_type(gpio_port), (1U << gpio_pin_source));
+        }
+
     };
 
-    // Базовый класс для работы с портом GPIO с поддержкой EXTI
-    template <GPIO_Port gpio_port, uint8_t GPIO_PinSource>
-    class GPIO_Pin<gpio_port, GPIO_PinSource, USE_EXTI>: 
+    // Класс для работы с пином GPIO с поддержкой EXTI
+    template <GPIO_Port gpio_port, uint8_t gpio_pin_source>
+    class GPIO_Pin_EXTI: 
+        public GPIO_Pin<gpio_port, gpio_pin_source>,
 
         public STM_EXTI::GPIO_EXTI<
-                    STM_EXTI::get_EXTI_PortSource(gpio_port), GPIO_PinSource>, 
+                    STM_EXTI::get_EXTI_PortSource(gpio_port), gpio_pin_source>, 
 
-        public BaseIRQDevice<GPIO_Pin<gpio_port, GPIO_PinSource, USE_EXTI>, 
-                                STM_EXTI::get_EXTI_IRQn(GPIO_PinSource)>
+        public BaseIRQDevice<GPIO_Pin_EXTI<gpio_port, gpio_pin_source>, 
+                                STM_EXTI::get_EXTI_IRQn(gpio_pin_source)>
     {
 
     public:
-        GPIO_Pin(){
+        GPIO_Pin_EXTI(){
             this->irq_device_ptr = this;
         }
 
-        void Init(
+        void init_pin_exti(
             GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_IN,
             GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
             GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr,
@@ -72,28 +82,14 @@ namespace STM_CppLib{
             NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr
         ){
             
-            RCC_AHBPeriphClockCmd(get_RCC_Periph(gpio_port), ENABLE);
-            
-            if (!GPIO_InitStructure_ptr){                
-                GPIO_InitTypeDef GPIO_InitStructure;
-        
-                /* Configure the GPIOx pin */
-                GPIO_InitStructure.GPIO_Pin = (1U << GPIO_PinSource);
-                GPIO_InitStructure.GPIO_Mode = GPIO_Mode;
-                GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-                GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd;
-                GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-                GPIO_Init(get_GPIO_type(gpio_port), &GPIO_InitStructure);
-            }
-            else{   GPIO_Init(get_GPIO_type(gpio_port), GPIO_InitStructure_ptr);   }
-
+            this->init_pin(GPIO_Mode, GPIO_PuPd, GPIO_InitStructure_ptr);
             this->init_exti(EXTI_InitStructure_ptr);
             this->init_interrupt(NVIC_InitStructure_ptr);
         }
         
         void irq_handler(){
             /*  Код для отработки прерывания  */
-            EXTI_ClearFlag(static_cast<uint32_t>(GPIO_PinSource));
+            EXTI_ClearFlag(static_cast<uint32_t>(gpio_pin_source));
         }
     };
     

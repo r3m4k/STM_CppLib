@@ -71,9 +71,9 @@ STM_CppLib::LSM303DLHC acc_sensor;      // Встроенный датчик с 
 // на перевод пина Pin_PC1 из состояние Reset в состояние Set.
 // ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
 STM_CppLib::STM_GPIO::GPIO_Pin
-    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>             Pin_PC0;
-STM_CppLib::STM_GPIO::GPIO_Pin
-    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, USE_EXTI>   Pin_PC1;
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>   Pin_PC0;
+STM_CppLib::STM_GPIO::GPIO_Pin_EXTI
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1>   Pin_PC1;
 
 // ----------------------------------------------------------------------------
 
@@ -139,6 +139,9 @@ int main()
 
                 leds.LedOff(LED9);
 
+                Pin_PC0.set_pin();
+                Pin_PC0.reset_pin();
+
                 // Отправим пакет данных по интерфейсам связи
                 // com_port.SendPackage(gyronavt_package);
                 
@@ -156,8 +159,8 @@ void InitAll(){
     gyro_sensor.Init();
     acc_sensor.Init();
     // com_port.Init();
-    Pin_PC0.Init();
-    Pin_PC1.Init();
+    Pin_PC0.init_pin();
+    Pin_PC1.init_pin_exti();
 
     // Настройка таймера для начала сбора данных
     uint32_t tim3_period = 25;
