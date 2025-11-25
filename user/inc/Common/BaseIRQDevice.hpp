@@ -23,7 +23,7 @@ namespace STM_CppLib{
     template <typename IRQDevice, IRQn_Type IRQn>
     class BaseIRQDevice{
     protected:
-        inline static IRQDevice* irq_device_ptr = nullptr;
+        __attribute__((used)) inline static IRQDevice* irq_device_ptr = nullptr;
 
         void init_interrupt(NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr){
 
@@ -47,8 +47,7 @@ namespace STM_CppLib{
         }
         
         static void static_irq_handler(){
-            if (irq_device_ptr)    
-                irq_device_ptr->irq_handler();
+            irq_device_ptr->irq_handler();
         }
         
     };

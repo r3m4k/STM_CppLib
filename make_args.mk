@@ -52,7 +52,7 @@ GCC_FLAGS = -std=gnu11 ${COMPILER_FLAGS} -c
 
 # флаги для g++
 # GPP_FLAGS = -std=gnu++11 ${COMPILER_FLAGS} -c -fabi-version=0 -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
-GPP_FLAGS = -std=gnu++17 ${COMPILER_FLAGS} -c -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
+GPP_FLAGS = -std=gnu++2a ${COMPILER_FLAGS} -c -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics
 
 # библиотеки компоновщика - должны быть последними в списке команды компоновщика
 # C:\SysGCC\arm-eabi\arm-none-eabi\lib\libm.a

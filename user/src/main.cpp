@@ -66,6 +66,7 @@ STM_CppLib::Leds leds;                  // Светодиоды на плате
 STM_CppLib::L3GD20 gyro_sensor;         // Встроенный гироскоп
 STM_CppLib::LSM303DLHC acc_sensor;      // Встроенный датчик с акселерометром, магнитным и
                                         // температурным датчиками
+GyronavtPackage gyronavt_package;               // Пакет данных в формате "Гиронавт"
 
 // Пин Pin_PC0 используется для инициализации прерывания EXTI_Line1, настроенное
 // на перевод пина Pin_PC1 из состояние Reset в состояние Set.
@@ -73,7 +74,7 @@ STM_CppLib::LSM303DLHC acc_sensor;      // Встроенный датчик с 
 STM_CppLib::STM_GPIO::GPIO_Pin
     <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>   Pin_PC0;
 STM_CppLib::STM_GPIO::GPIO_Pin_EXTI
-    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1>   Pin_PC1;
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data>   Pin_PC1;
 
 // ----------------------------------------------------------------------------
 
@@ -109,7 +110,6 @@ int main()
     
     // ##########################
 
-    GyronavtPackage gyronavt_package;               // Пакет данных в формате "Гиронавт"
     auto stage = ProgramStages::InfiniteSending;    // Стадия программы
 
     // Инициализируем всё оборудования
@@ -135,13 +135,15 @@ int main()
                 acc_sensor.ReadData();
                 
                 // Обновим данные посылки
-                gyronavt_package.UpdateData();
+                // gyronavt_package.UpdateData();
 
                 leds.LedOff(LED9);
 
-                Pin_PC0.set_pin();
-                Pin_PC0.reset_pin();
+                EXTI_GenerateSWInterrupt(EXTI_Line1);
 
+                // Pin_PC0.set_pin();
+                // Pin_PC0.reset_pin();
+                
                 // Отправим пакет данных по интерфейсам связи
                 // com_port.SendPackage(gyronavt_package);
                 
@@ -174,22 +176,12 @@ void InitAll(){
 
 // -------------------------------------------------------------------------------
 
-// void TIM3_IRQHandler(void)
-// {
-//     timer3.CallBack();
-// }
+void update_package_data(){
+    leds.LedOff(LED4);
+    leds.LedOn(LED4);
 
-// void UserTIM3_IRQHandler(){
-//     tick_counter += 1;
-//     leds.ChangeLedStatus(LED8);
-// }
-
-// // -------------------------------------------------------------------------------
-
-// void UserTIM4_IRQHandler(){
-//     leds.ChangeLedStatus(LED6);
-//     leds.ChangeLedStatus(LED7);
-// }
+    gyronavt_package.UpdateData();
+}
 
 // -------------------------------------------------------------------------------
 

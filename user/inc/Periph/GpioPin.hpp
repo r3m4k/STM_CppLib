@@ -16,6 +16,9 @@
 #define USE_EXTI        true
 #define NOT_USE_EXTI    false
 
+/* Global variables ----------------------------------------------------------*/
+extern STM_CppLib::Leds leds;
+
 // -----------------------------------------------------------------------------
 namespace STM_CppLib{
     namespace STM_GPIO{
@@ -58,14 +61,14 @@ namespace STM_CppLib{
     };
 
     // Класс для работы с пином GPIO с поддержкой EXTI
-    template <GPIO_Port gpio_port, uint8_t gpio_pin_source>
+    template <GPIO_Port gpio_port, uint8_t gpio_pin_source, auto external_irq_handler>
     class GPIO_Pin_EXTI: 
         public GPIO_Pin<gpio_port, gpio_pin_source>,
 
         public STM_EXTI::GPIO_EXTI<
                     STM_EXTI::get_EXTI_PortSource(gpio_port), gpio_pin_source>, 
 
-        public BaseIRQDevice<GPIO_Pin_EXTI<gpio_port, gpio_pin_source>, 
+        public BaseIRQDevice<GPIO_Pin_EXTI<gpio_port, gpio_pin_source, external_irq_handler>, 
                                 STM_EXTI::get_EXTI_IRQn(gpio_pin_source)>
     {
 
@@ -89,6 +92,7 @@ namespace STM_CppLib{
         
         void irq_handler(){
             /*  Код для отработки прерывания  */
+            external_irq_handler();
             EXTI_ClearFlag(static_cast<uint32_t>(gpio_pin_source));
         }
     };
