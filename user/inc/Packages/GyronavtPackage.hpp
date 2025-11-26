@@ -75,6 +75,15 @@ public:
 
         DataPackaging();
     }
+
+    void UpdateTime(uint32_t new_time){
+        time = new_time;
+        
+        data_arr[TimeBaseIndex + 0] = static_cast<uint8_t>(time);
+        data_arr[TimeBaseIndex + 1] = static_cast<uint8_t>(time >> 8);
+        data_arr[TimeBaseIndex + 2] = static_cast<uint8_t>(time >> 16);
+        data_arr[TimeBaseIndex + 3] = static_cast<uint8_t>(time >> 24);
+    }
     
 private:
     uint8_t CountControlSum()  {

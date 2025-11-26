@@ -55,7 +55,7 @@ namespace STM_CppLib{
     template<uint8_t EXTI_PortSourceGPIOx, uint8_t EXTI_PinSourcex>
     class GPIO_EXTI{
     public:
-        void init_exti(EXTI_InitTypeDef* EXTI_InitStructure_ptr = nullptr){
+        void InitExti(EXTI_InitTypeDef* EXTI_InitStructure_ptr = nullptr){
             
             // Select the input source pin for the EXTI line
             SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOx, EXTI_PinSourcex);

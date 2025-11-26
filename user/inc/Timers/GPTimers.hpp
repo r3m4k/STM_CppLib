@@ -11,8 +11,6 @@
  *   переменную PeriphClockCmd для хранения шины тактирования всех дочерних
  *   классов
  * - Timer2, Timer3, Timer4 наследуются от GeneralPurposeTimer и BaseIRQDevice
- * - Используется CRTP (Curiously Recurring Template Pattern) для устранения
- *   виртуальных вызовов и уменьшения размера объектов
  *************************************************************************** */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -86,7 +84,7 @@ namespace STM_CppLib{
             }
             else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
         }
 
         void irq_handler(){
@@ -124,7 +122,7 @@ namespace STM_CppLib{
             }
             else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
         }
 
         void irq_handler(){
@@ -161,7 +159,7 @@ namespace STM_CppLib{
             }
             else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
         }
 
         void irq_handler(){
