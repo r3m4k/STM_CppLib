@@ -44,7 +44,7 @@ namespace STM_CppLib{
             TIM_Cmd(TIMx, DISABLE);
         };
 
-        void Init(TimerConfig* timer_config){
+        void InitBaseTimer(TimerConfig* timer_config){
             /* Init structures */
             TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
@@ -64,7 +64,39 @@ namespace STM_CppLib{
             TIM_Cmd(TIMx, ENABLE);
         }
     };
-    
+
+    // -------------------------------------------------------------------------
+
+    enum class TimerTypes {Timer2, Timer3, Timer4};
+
+    template<TimerTypes timer_type>
+    class TimerDescriptor{
+    public:
+        inline static TIM_TypeDef* TIMx = []() -> TIM_TypeDef* {
+            switch (timer_type){
+                case TimerTypes::Timer2: return TIM2;
+                case TimerTypes::Timer3: return TIM3;
+                case TimerTypes::Timer4: return TIM4;
+            }
+        }();
+
+        static constexpr IRQn_Type IRQn = []() -> IRQn_Type {
+            switch (timer_type){
+                case TimerTypes::Timer2: return TIM2_IRQn;
+                case TimerTypes::Timer3: return TIM3_IRQn;
+                case TimerTypes::Timer4: return TIM4_IRQn;
+            }
+        }();
+
+        static constexpr uint32_t RCC_Periph = []() -> uint32_t {
+            switch (timer_type){
+                case TimerTypes::Timer2: return RCC_APB1Periph_TIM2;
+                case TimerTypes::Timer3: return RCC_APB1Periph_TIM3;
+                case TimerTypes::Timer4: return RCC_APB1Periph_TIM4;
+            }
+        }();
+    };
+
     }
 }
 

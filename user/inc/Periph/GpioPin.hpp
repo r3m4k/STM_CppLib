@@ -61,7 +61,7 @@ namespace STM_CppLib{
     };
 
     // Класс для работы с пином GPIO с поддержкой EXTI
-    template <GPIO_Port gpio_port, uint8_t gpio_pin_source, auto external_irq_handler>
+    template <GPIO_Port gpio_port, uint8_t gpio_pin_source, handler_t external_irq_handler>
     class GPIO_Pin_EXTI: 
         public GPIO_Pin<gpio_port, gpio_pin_source>,
 
