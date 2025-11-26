@@ -72,13 +72,13 @@ namespace STM_CppLib{
     template<TimerTypes timer_type>
     class TimerDescriptor{
     public:
-        inline static TIM_TypeDef* TIMx = []() -> TIM_TypeDef* {
+        static constexpr TIM_TypeDef* get_TIMx(){
             switch (timer_type){
                 case TimerTypes::Timer2: return TIM2;
                 case TimerTypes::Timer3: return TIM3;
                 case TimerTypes::Timer4: return TIM4;
             }
-        }();
+        };
 
         static constexpr IRQn_Type IRQn = []() -> IRQn_Type {
             switch (timer_type){

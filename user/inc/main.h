@@ -90,9 +90,6 @@ void InitAll();
 
 void update_package_data();
 void send_package();
-void timer3_handler();
-void timer4_handler();
-
 
 void UserEP3_OUT_Callback(uint8_t *buffer);
 

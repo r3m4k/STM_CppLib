@@ -64,17 +64,25 @@ using namespace STM_CppLib;
 // Периферия
 Leds leds;                          // Светодиоды на плате
 L3GD20 gyro_sensor;                 // Встроенный гироскоп
-LSM303DLHC acc_sensor;              // Встроенный датчик с акселерометром, магнитным и температурным датчиками
+LSM303DLHC acc_sensor;              // Встроенный датчик с акселерометром,
+                                    // магнитным и температурным датчиками
 GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
 
-STM_Timer::Timer3<timer3_handler> timer3;   // Основной таймер, запускающий чтение и отправку данных 
-STM_Timer::Timer4<timer4_handler> timer4;   // Таймер для мерцаний светодиодом
+STM_Timer::Timer3<[](){
+    leds.ChangeLedStatus(LED8);
+}> timer3;   // Основной таймер, запускающий чтение и отправку данных 
+STM_Timer::Timer4<[](){
+    leds.ChangeLedStatus(LED6);
+    leds.ChangeLedStatus(LED7);
+}> timer4;   // Таймер для мерцаний светодиодом
 
 // Пин Pin_PC0 используется для инициализации прерывания EXTI_Line1, настроенное
 // на перевод пина Pin_PC1 из состояние Reset в состояние Set.
 // ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
-STM_GPIO::GPIO_Pin<STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>                             Pin_PC0;
-STM_GPIO::GPIO_Pin_EXTI<STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data>   Pin_PC1;
+STM_GPIO::GPIO_Pin
+    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>                       Pin_PC0;
+STM_GPIO::GPIO_Pin_EXTI
+    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data>  Pin_PC1;
 
 // ----------------------------------------------------------------------------
 
@@ -172,14 +180,6 @@ void update_package_data(){
     leds.LedOn(LED4);
 
     gyronavt_package.UpdateData();
-}
-
-void timer3_handler(){
-    leds.ChangeLedStatus(LED8);
-}
-
-void timer4_handler(){
-    leds.ChangeLedStatus(LED8);
 }
 
 // -------------------------------------------------------------------------------

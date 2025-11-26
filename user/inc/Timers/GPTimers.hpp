@@ -49,7 +49,7 @@ namespace STM_CppLib{
         public:
             GPTimer(){
                 this->irq_device_ptr = this;
-                this->TIMx = TimerDescriptor<timer_type>::TIMx;
+                this->TIMx = TimerDescriptor<timer_type>::get_TIMx();
             }
 
             void Init(
