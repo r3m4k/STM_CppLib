@@ -127,27 +127,17 @@ int main()
     {
         switch (stage){
         case ProgramStages::InfiniteSending:
-            // if (current_tick != tick_counter){
-                leds.LedOn(LED9);
 
-                // Считаем показания датчика
-                gyro_sensor.ReadData();
-                acc_sensor.ReadData();
-                
-                // Обновим данные посылки
-                // gyronavt_package.UpdateData();
+            leds.LedOn(LED9);
 
-                leds.LedOff(LED9);
-
-                EXTI_GenerateSWInterrupt(EXTI_Line1);
-
-                // Pin_PC0.set_pin();
-                // Pin_PC0.reset_pin();
-                
-                // Отправим пакет данных по интерфейсам связи
-                // com_port.SendPackage(gyronavt_package);
-                
-            // }
+            // Считаем показания датчиков
+            gyro_sensor.ReadData();
+            acc_sensor.ReadData();
+            
+            // Обновим данные gyronavt_package в прерывании EXTI_Line1 
+            EXTI_GenerateSWInterrupt(EXTI_Line1);
+            
+            leds.LedOff(LED9);
 
             break;
         }
@@ -161,8 +151,8 @@ void InitAll(){
     gyro_sensor.Init();
     acc_sensor.Init();
     // com_port.Init();
-    Pin_PC0.init_pin();
-    Pin_PC1.init_pin_exti();
+    Pin_PC0.InitPin();
+    Pin_PC1.InitPinExti();
 
     // Настройка таймера для начала сбора данных
     uint32_t tim3_period = 25;
@@ -176,11 +166,20 @@ void InitAll(){
 
 // -------------------------------------------------------------------------------
 
+// Функция для обновления данных в посылке gyronavt_package
 void update_package_data(){
     leds.LedOff(LED4);
     leds.LedOn(LED4);
 
     gyronavt_package.UpdateData();
+}
+
+// -------------------------------------------------------------------------------
+
+// Функция для отправки посылки gyronavt_package по COM порту
+void send_package(){
+    gyronavt_package.UpdateTime(++tick_counter);
+    // com_port.SendPackage(gyronavt_package);
 }
 
 // -------------------------------------------------------------------------------
@@ -209,7 +208,6 @@ void Delay(__IO uint32_t nTime)
     TimingDelay = nTime;
 
     while (TimingDelay != 0){}
-    // for (int i = 0; i < 1000000; i++){}
 }
 
 // Function to Decrement the TimingDelay variable.

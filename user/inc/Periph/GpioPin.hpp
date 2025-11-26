@@ -28,7 +28,7 @@ namespace STM_CppLib{
     class GPIO_Pin{
 
     public:
-        void init_pin(
+        void InitPin(
             GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_OUT,
             GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
             GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr
@@ -50,11 +50,11 @@ namespace STM_CppLib{
             else{   GPIO_Init(get_GPIO_type(gpio_port), GPIO_InitStructure_ptr);   }
         }
 
-        void set_pin(){
+        void SetPin(){
             GPIO_SetBits(get_GPIO_type(gpio_port), (1U << gpio_pin_source));
         }
 
-        void reset_pin(){
+        void ResetPin(){
             GPIO_ResetBits(get_GPIO_type(gpio_port), (1U << gpio_pin_source));
         }
 
@@ -77,7 +77,7 @@ namespace STM_CppLib{
             this->irq_device_ptr = this;
         }
 
-        void init_pin_exti(
+        void InitPinExti(
             GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_IN,
             GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
             GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr,
@@ -85,9 +85,9 @@ namespace STM_CppLib{
             NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr
         ){
             
-            this->init_pin(GPIO_Mode, GPIO_PuPd, GPIO_InitStructure_ptr);
-            this->init_exti(EXTI_InitStructure_ptr);
-            this->init_interrupt(NVIC_InitStructure_ptr);
+            this->InitPin(GPIO_Mode, GPIO_PuPd, GPIO_InitStructure_ptr);
+            this->InitExti(EXTI_InitStructure_ptr);
+            this->InitInterrupt(NVIC_InitStructure_ptr);
         }
         
         void irq_handler(){

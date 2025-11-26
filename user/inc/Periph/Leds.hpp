@@ -18,7 +18,7 @@ namespace STM_CppLib{
     // Класс для управления светодиодами на плате
     class Leds{
         // Байт, в котором будем побитово хранить информацию о состоянии светодиода (вкл/выкл)
-        volatile uint8_t leds_status;
+        uint8_t leds_status;
 
     public:
         Leds(): leds_status(0x00) {}

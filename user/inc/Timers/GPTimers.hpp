@@ -84,7 +84,7 @@ namespace STM_CppLib{
             }
             else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
         }
 
         void irq_handler(){
@@ -122,7 +122,7 @@ namespace STM_CppLib{
             }
             else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
         }
 
         void irq_handler(){
@@ -159,7 +159,7 @@ namespace STM_CppLib{
             }
             else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::init_interrupt(NVIC_InitStructure_ptr);
+            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
         }
 
         void irq_handler(){

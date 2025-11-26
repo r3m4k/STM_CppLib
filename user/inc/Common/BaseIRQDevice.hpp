@@ -23,9 +23,9 @@ namespace STM_CppLib{
     template <typename IRQDevice, IRQn_Type IRQn>
     class BaseIRQDevice{
     protected:
-        __attribute__((used)) inline static IRQDevice* irq_device_ptr = nullptr;
+        inline static IRQDevice* irq_device_ptr = nullptr;
 
-        void init_interrupt(NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr){
+        void InitInterrupt(NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr){
 
             if (!NVIC_InitStructure_ptr){
                 NVIC_InitTypeDef NVIC_InitStructure;
@@ -41,7 +41,8 @@ namespace STM_CppLib{
 
             register_interrupt();
         }
-
+    
+    private:
         void register_interrupt(){
             __user_vector_table[PeriphIRQnBase + IRQn] = static_irq_handler;
         }
