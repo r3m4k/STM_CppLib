@@ -11,23 +11,20 @@
 #include "stm32f30x_misc.h"
 #include "stm32f30x_tim.h"
 
-/* Defines -------------------------------------------------------------------*/
+#include "Consts.hpp"
 
-/* Typedef -------------------------------------------------------------------*/
-typedef void (*RCC_PeriphClockCmd_Typedef)(uint32_t, FunctionalState);
-typedef void (*CallbackFunc)(void);
+/* Defines -------------------------------------------------------------------*/
 
 // -----------------------------------------------------------------------------
 namespace STM_CppLib{
-    
     namespace STM_Timer{
                 
     // Структура для настройки таймера
     struct TimerConfig{
-        RCC_PeriphClockCmd_Typedef PeriphClockCmd;      // Функция для включения тактирования
-        uint32_t RCC_PeriphClock;                       // Шина, на которой включено тактирование таймера
-        uint16_t TimPrescaler;                          // Делитель частоты
-        uint32_t TimPeriod;                             // Период генерации прерывания в тактах
+        RCC_PeriphClockCmd_Type PeriphClockCmd;      // Функция для включения тактирования
+        uint32_t RCC_PeriphClock;                    // Шина, на которой включено тактирование таймера
+        uint16_t TimPrescaler;                       // Делитель частоты
+        uint32_t TimPeriod;                          // Период генерации прерывания в тактах
     };
 
     }

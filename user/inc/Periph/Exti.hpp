@@ -20,7 +20,10 @@
 namespace STM_CppLib{
     namespace STM_EXTI{ 
 
-    constexpr IRQn_Type get_EXTI_IRQn(uint8_t pin_source){
+    template <STM_GPIO::GPIO_Port port, uint8_t pin_source>
+    class EXTI_Descriptor{
+    public:
+        static constexpr IRQn_Type IRQn = [](){
         switch (pin_source) {
             case GPIO_PinSource0: return EXTI0_IRQn;
             case GPIO_PinSource1: return EXTI1_IRQn;
@@ -37,19 +40,20 @@ namespace STM_CppLib{
             case GPIO_PinSource12: case GPIO_PinSource13:
             case GPIO_PinSource14: case GPIO_PinSource15:
                 return EXTI15_10_IRQn;
-        }
-    }
+            }
+        }();
 
-    constexpr uint8_t get_EXTI_PortSource(STM_GPIO::GPIO_Port port){
-        switch(port) {
-            case STM_GPIO::GPIO_Port::PortA: return EXTI_PortSourceGPIOA;
-            case STM_GPIO::GPIO_Port::PortB: return EXTI_PortSourceGPIOB;
-            case STM_GPIO::GPIO_Port::PortC: return EXTI_PortSourceGPIOC;
-            case STM_GPIO::GPIO_Port::PortD: return EXTI_PortSourceGPIOD;
-            case STM_GPIO::GPIO_Port::PortE: return EXTI_PortSourceGPIOE;
-            case STM_GPIO::GPIO_Port::PortF: return EXTI_PortSourceGPIOF;
-        }
-    }
+        static constexpr uint8_t PortSource = [](){
+            switch(port) {
+                case STM_GPIO::GPIO_Port::PortA: return EXTI_PortSourceGPIOA;
+                case STM_GPIO::GPIO_Port::PortB: return EXTI_PortSourceGPIOB;
+                case STM_GPIO::GPIO_Port::PortC: return EXTI_PortSourceGPIOC;
+                case STM_GPIO::GPIO_Port::PortD: return EXTI_PortSourceGPIOD;
+                case STM_GPIO::GPIO_Port::PortE: return EXTI_PortSourceGPIOE;
+                case STM_GPIO::GPIO_Port::PortF: return EXTI_PortSourceGPIOF;
+            }
+        }();
+    };
     
     // Класс для работы с EXTI
     template<uint8_t EXTI_PortSourceGPIOx, uint8_t EXTI_PinSourcex>
@@ -73,8 +77,7 @@ namespace STM_CppLib{
         }
     };
 
-    } // namespace EXTI
-    
+    } // namespace EXTI   
 } // namespace STM_CppLib
 
 

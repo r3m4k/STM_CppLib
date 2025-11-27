@@ -19,9 +19,6 @@
 #define     Prescaller_10kHz        7200
 #define     Prescaller_100kHz       720
 
-/* Typedef -------------------------------------------------------------------*/
-typedef void (*RCC_PeriphClockCmd_Typedef)(uint32_t, FunctionalState);
-
 /* Global variables ----------------------------------------------------------*/
 
 // -----------------------------------------------------------------------------

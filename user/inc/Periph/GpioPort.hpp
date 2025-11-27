@@ -19,28 +19,34 @@ namespace STM_CppLib{
             PortA, PortB, PortC, PortD, PortE, PortF
         };
 
-        constexpr GPIO_TypeDef* get_GPIO_type(GPIO_Port port) noexcept {
-            switch(port) {
-                case GPIO_Port::PortA: return GPIOA;
-                case GPIO_Port::PortB: return GPIOB;
-                case GPIO_Port::PortC: return GPIOC;
-                case GPIO_Port::PortD: return GPIOD;
-                case GPIO_Port::PortE: return GPIOE;
-                case GPIO_Port::PortF: return GPIOF;
-                default: return nullptr;
-            }
-        }
+        template<GPIO_Port port>
+        class GPIO_PortDescriptor{
+        public:            
+            static constexpr GPIO_TypeDef* get_GPIO_Type() {
+                switch(port) {
+                    case GPIO_Port::PortA: return GPIOA;
+                    case GPIO_Port::PortB: return GPIOB;
+                    case GPIO_Port::PortC: return GPIOC;
+                    case GPIO_Port::PortD: return GPIOD;
+                    case GPIO_Port::PortE: return GPIOE;
+                    case GPIO_Port::PortF: return GPIOF;
+                    default: return nullptr;
+                }
+            };
+            
+            static constexpr uint32_t RCC_Periph = []() -> uint32_t {
+                switch (port) {
+                    case GPIO_Port::PortA: return RCC_AHBPeriph_GPIOA;
+                    case GPIO_Port::PortB: return RCC_AHBPeriph_GPIOB;
+                    case GPIO_Port::PortC: return RCC_AHBPeriph_GPIOC;
+                    case GPIO_Port::PortD: return RCC_AHBPeriph_GPIOD;
+                    case GPIO_Port::PortE: return RCC_AHBPeriph_GPIOE;
+                    case GPIO_Port::PortF: return RCC_AHBPeriph_GPIOF;
+                    default: return 0xFFFF;
+                }
+            }();
+        
 
-        constexpr uint32_t get_RCC_Periph(GPIO_Port port) noexcept {
-            switch (port) {
-                case GPIO_Port::PortA: return RCC_AHBPeriph_GPIOA;
-                case GPIO_Port::PortB: return RCC_AHBPeriph_GPIOB;
-                case GPIO_Port::PortC: return RCC_AHBPeriph_GPIOC;
-                case GPIO_Port::PortD: return RCC_AHBPeriph_GPIOD;
-                case GPIO_Port::PortE: return RCC_AHBPeriph_GPIOE;
-                case GPIO_Port::PortF: return RCC_AHBPeriph_GPIOF;
-                default: return 0xFFFF;
-            }
         };
 
     } // namespace STM_GPIO
