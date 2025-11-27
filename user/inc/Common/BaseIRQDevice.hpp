@@ -5,6 +5,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f30x.h"
 #include "stm32f30x_misc.h"
+
 #include "Consts.hpp"
 
 /* Defines -------------------------------------------------------------------*/
@@ -23,6 +24,7 @@ namespace STM_CppLib{
     template <typename IRQDevice, IRQn_Type IRQn>
     class BaseIRQDevice{
     protected:
+        // Указатель на класс, реализующий отработку прерывания по каналу IRQn
         inline static IRQDevice* irq_device_ptr = nullptr;
 
         void InitInterrupt(NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr){

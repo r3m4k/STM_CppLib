@@ -30,7 +30,7 @@ namespace STM_CppLib{
     public:
         void InitPin(
             GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_OUT,
-            GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
+            GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_NOPULL,
             GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr
         ){
             
@@ -61,7 +61,7 @@ namespace STM_CppLib{
     };
 
     // Класс для работы с пином GPIO с поддержкой EXTI
-    template <GPIO_Port gpio_port, uint8_t gpio_pin_source, auto external_irq_handler>
+    template <GPIO_Port gpio_port, uint8_t gpio_pin_source, handler_t external_irq_handler>
     class GPIO_Pin_EXTI: 
         public GPIO_Pin<gpio_port, gpio_pin_source>,
 
@@ -79,7 +79,7 @@ namespace STM_CppLib{
 
         void InitPinExti(
             GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_IN,
-            GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
+            GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_NOPULL,
             GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr,
             EXTI_InitTypeDef* EXTI_InitStructure_ptr = nullptr,
             NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr
@@ -93,6 +93,7 @@ namespace STM_CppLib{
         void irq_handler(){
             /*  Код для отработки прерывания  */
             external_irq_handler();
+
             EXTI_ClearFlag(static_cast<uint32_t>(gpio_pin_source));
         }
     };

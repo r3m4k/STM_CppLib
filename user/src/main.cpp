@@ -59,27 +59,33 @@ enum class ProgramStages{InfiniteSending};
 
 // ----------------------------------------------------------------------------
 
+using namespace STM_CppLib;
+
 // Периферия
-STM_CppLib::STM_Timer::Timer3 timer3;   // Основной таймер, запускающий чтение и отправку данных 
-STM_CppLib::STM_Timer::Timer4 timer4;   // Таймер для мерцаний светодиодом
-STM_CppLib::Leds leds;                  // Светодиоды на плате
-STM_CppLib::L3GD20 gyro_sensor;         // Встроенный гироскоп
-STM_CppLib::LSM303DLHC acc_sensor;      // Встроенный датчик с акселерометром, магнитным и
-                                        // температурным датчиками
-GyronavtPackage gyronavt_package;               // Пакет данных в формате "Гиронавт"
+Leds leds;                          // Светодиоды на плате
+L3GD20 gyro_sensor;                 // Встроенный гироскоп
+LSM303DLHC acc_sensor;              // Встроенный датчик с акселерометром,
+                                    // магнитным и температурным датчиками
+GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
+
+// Интерфейсы связи
+ComPort com_port;
+
+// Используемые таймеры
+STM_Timer::Timer3<send_package> timer3;   // Основной таймер, запускающий чтение и отправку данных 
+STM_Timer::Timer4<[](){
+    leds.ChangeLedStatus(LED6);
+    leds.ChangeLedStatus(LED7);
+}> timer4;   // Таймер для мерцания светодиодами LED6, LED7
 
 // Пин Pin_PC0 используется для инициализации прерывания EXTI_Line1, настроенное
 // на перевод пина Pin_PC1 из состояние Reset в состояние Set.
 // ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
-STM_CppLib::STM_GPIO::GPIO_Pin
-    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>   Pin_PC0;
-STM_CppLib::STM_GPIO::GPIO_Pin_EXTI
-    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data>   Pin_PC1;
+// STM_GPIO::GPIO_Pin <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0> Pin_PC0;
 
-// ----------------------------------------------------------------------------
-
-// Интерфейсы связи
-ComPort com_port;
+// Настройка внешнего прерывания, которое будет вызываться из main
+STM_GPIO::GPIO_Pin_EXTI
+    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data> Pin_PC1;
 
 // ----------------------------------------------------------------------------
 
@@ -90,6 +96,8 @@ uint32_t tick_counter = 0;      // Счётчик тиков основного 
 
 int main()
 {
+    // ##########################
+
     __disable_irq();
 
     // Загрузим собственную таблицу прерываний
@@ -150,12 +158,12 @@ void InitAll(){
     leds.Init();
     gyro_sensor.Init();
     acc_sensor.Init();
-    // com_port.Init();
-    Pin_PC0.InitPin();
+    com_port.Init();
+    // Pin_PC0.InitPin();
     Pin_PC1.InitPinExti();
 
     // Настройка таймера для начала сбора данных
-    uint32_t tim3_period = 25;
+    uint32_t tim3_period = 24;      // те на 25 тик таймер переполнится и вызовется прерывание
     timer3.Init(tim3_period);
 
     // Настройка таймера для мерцания светодиодами
@@ -168,9 +176,6 @@ void InitAll(){
 
 // Функция для обновления данных в посылке gyronavt_package
 void update_package_data(){
-    leds.LedOff(LED4);
-    leds.LedOn(LED4);
-
     gyronavt_package.UpdateData();
 }
 
@@ -178,8 +183,9 @@ void update_package_data(){
 
 // Функция для отправки посылки gyronavt_package по COM порту
 void send_package(){
+    leds.ChangeLedStatus(LED8);
     gyronavt_package.UpdateTime(++tick_counter);
-    // com_port.SendPackage(gyronavt_package);
+    com_port.SendPackage(gyronavt_package);
 }
 
 // -------------------------------------------------------------------------------

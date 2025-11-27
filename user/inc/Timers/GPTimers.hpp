@@ -35,142 +35,77 @@
 /* Defines -------------------------------------------------------------------*/
 
 /* Global variables ----------------------------------------------------------*/
-extern __user_pHandler __user_vector_table[];
-extern STM_CppLib::Leds leds;
-extern uint32_t tick_counter;
 
 // -----------------------------------------------------------------------------
 
 namespace STM_CppLib{
     namespace STM_Timer{
         
-    // -----------------------------------------------------------------------------
-    class GeneralPurposeTimer: public BaseTimer{
-    protected:
-        inline static RCC_PeriphClockCmd_Type PeriphClockCmd = RCC_APB1PeriphClockCmd;
-    };
-
-    // -----------------------------------------------------------------------------
-
-    class Timer2: public GeneralPurposeTimer, public BaseIRQDevice<Timer2, TIM2_IRQn>{
-    public:
-        Timer2(){
-            irq_device_ptr = this;      // Указатель на себя для отработки прерывания
-            TIMx = TIM2;                // Указатель на структуру соответствующего таймера
-        }
-
-        void Init(
-            uint32_t tim_period = 1000,                             // Количество тиков таймера для генерации прерывания
-            uint16_t prescaller = Prescaller_10kHz,                 // Делитель частоты шины 
-            TimerConfig* timer_config_ptr = nullptr,                // Указатель на конфигурацию таймера 
-            NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr      // Указатель на структуру инициализации прерывания 
-        ){
-            /* *************************************************************************
-            *  Данный метод позволяет гибко настроить таймер для работы и отработки прерываний.
-            *  Если timer_config_ptr == nullptr, то таймер инициализируется с прописанными в коде параметрами,
-            *  чтобы их изменить необходимо самостоятельно заполнить конфигурацию таймера и передать в функцию
-            *  в качестве параметра. Аналогично реализована инициализация прерывания.
-            ** ********************************************************************** */
-
-            if (!timer_config_ptr){
-                TimerConfig timer_config = {
-                    .PeriphClockCmd = PeriphClockCmd,
-                    .RCC_PeriphClock = RCC_APB1Periph_TIM2,
-                    .TimPrescaler = prescaller,
-                    .TimPeriod = tim_period
-                };
-
-                BaseTimer::Init(&timer_config);
+        // ---------------------------------------------------------------------
+        // Шаблонный класс для работы с General Purpose Timer
+        template<TimerTypes timer_type, handler_t external_irq_handler>
+        class GPTimer: public BaseTimer, public BaseIRQDevice<GPTimer<timer_type, external_irq_handler>, 
+                                                                TimerDescriptor<timer_type>::IRQn>{
+        public:
+            GPTimer(){
+                this->irq_device_ptr = this;
+                this->TIMx = TimerDescriptor<timer_type>::get_TIMx();
             }
-            else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
-        }
+            void Init(
+                uint32_t tim_period = 1000,                             // Количество тиков таймера для генерации прерывания
+                uint16_t prescaller = Prescaller_10kHz,                 // Делитель частоты шины 
+                TimerConfig* timer_config_ptr = nullptr,                // Указатель на конфигурацию таймера 
+                NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr      // Указатель на структуру инициализации прерывания 
+            ){
+                /* *************************************************************************
+                *  Данный метод позволяет гибко настроить таймер для работы и отработки прерываний.
+                *  Если timer_config_ptr == nullptr, то таймер инициализируется с прописанными в коде параметрами,
+                *  чтобы их изменить необходимо самостоятельно заполнить конфигурацию таймера и передать в функцию
+                *  в качестве параметра. Аналогично реализована инициализация прерывания.
+                ** ********************************************************************** */
 
-        void irq_handler(){
-            /*  Код для отработки прерывания  */
+                if (!timer_config_ptr){
+                    TimerConfig timer_config = {
+                        .PeriphClockCmd = RCC_APB1PeriphClockCmd,
+                        .RCC_PeriphClock = TimerDescriptor<timer_type>::RCC_Periph,
+                        .TimPrescaler = prescaller,
+                        .TimPeriod = tim_period
+                    };
 
-            // Очистим регистр наличия прерывания от датчика
-            TIM_ClearITPendingBit(TIMx, TIM_IT_Update);     
-        }
-    };
+                    this->InitBaseTimer(&timer_config);
+                }
+                else{   this->InitBaseTimer(timer_config_ptr);   }
 
-    // -----------------------------------------------------------------------------
-
-    class Timer3: public GeneralPurposeTimer, public BaseIRQDevice<Timer3, TIM3_IRQn>{
-    public:
-        Timer3(){
-            irq_device_ptr = this;
-            TIMx = TIM3;
-        }
-
-        void Init(
-            uint32_t tim_period = 1000,
-            uint16_t prescaller = Prescaller_10kHz,
-            TimerConfig* timer_config_ptr = nullptr,
-            NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr){
-            
-            if (!timer_config_ptr){
-                TimerConfig timer_config = {
-                    .PeriphClockCmd = PeriphClockCmd,
-                    .RCC_PeriphClock = RCC_APB1Periph_TIM3,
-                    .TimPrescaler = prescaller,
-                    .TimPeriod = tim_period
-                };
-
-                BaseTimer::Init(&timer_config);
+                this->InitInterrupt(NVIC_InitStructure_ptr);
             }
-            else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
-        }
+            void irq_handler(){
+                // Вызов внешнего обработчика прерывания
+                external_irq_handler();
 
-        void irq_handler(){
-            tick_counter += 1;
-            leds.ChangeLedStatus(LED8);
-            TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
-        }
-    };
-
-    // -----------------------------------------------------------------------------
-
-    class Timer4: public GeneralPurposeTimer, public BaseIRQDevice<Timer4, TIM4_IRQn>{
-    public:
-        Timer4(){
-            irq_device_ptr = this;
-            TIMx = TIM4;
-        }
-
-        void Init(
-            uint32_t tim_period = 1000,
-            uint16_t prescaller = Prescaller_10kHz,
-            TimerConfig* timer_config_ptr = nullptr,
-            NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr
-        ){
-            if (!timer_config_ptr){
-                TimerConfig timer_config = {
-                    .PeriphClockCmd = PeriphClockCmd,
-                    .RCC_PeriphClock = RCC_APB1Periph_TIM4,
-                    .TimPrescaler = prescaller,
-                    .TimPeriod = tim_period
-                };
-
-                BaseTimer::Init(&timer_config);
+                // Очистим регистр наличия прерывания от датчика
+                TIM_ClearITPendingBit(TIMx, TIM_IT_Update);     
             }
-            else{   BaseTimer::Init(timer_config_ptr);   }
 
-            BaseIRQDevice::InitInterrupt(NVIC_InitStructure_ptr);
-        }
+        };
 
-        void irq_handler(){
-            leds.ChangeLedStatus(LED6);
-            leds.ChangeLedStatus(LED7);
-            TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
-        }
-    };
+        // ---------------------------------------------------------------------
 
-    }
-}
+        // Псевдонимы таймеров для удобства использования 
+        template<handler_t external_irq_handler>
+        using Timer2 = GPTimer<TimerTypes::Timer2, external_irq_handler>;
+
+        template<handler_t external_irq_handler>
+        using Timer3 = GPTimer<TimerTypes::Timer3, external_irq_handler>;
+
+        template<handler_t external_irq_handler>
+        using Timer4 = GPTimer<TimerTypes::Timer4, external_irq_handler>;
+
+        // ---------------------------------------------------------------------
+
+    } // namespace STM_Timer
+} // namespace STM_CppLib
 
 
 #endif /*   __TIMER_HPP   */
