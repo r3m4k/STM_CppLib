@@ -13,7 +13,9 @@
 #define LSM_Acc_Sensitivity_4g     (float)     0.5f            /*!< accelerometer sensitivity with 4 g full scale [LSB/mg] */
 #define LSM_Acc_Sensitivity_8g     (float)     0.25f           /*!< accelerometer sensitivity with 8 g full scale [LSB/mg] */
 #define LSM_Acc_Sensitivity_16g    (float)     0.0834f         /*!< accelerometer sensitivity with 12 g full scale [LSB/mg] */
-	 
+
+#define GyroCoeff   0.001   // Коэффициент перевода из mgps в gps (градус/сек)
+
 // -----------------------------------------------------------------------------
 namespace STM_CppLib{
 
@@ -23,7 +25,14 @@ namespace STM_CppLib{
         float gyro_multiplier;
 
     public:
-        TriaxialData gyro_data;
+
+        /* --------------------------------------------
+        * В соответствии с документацией на LSM303DLHC:
+        * OX = ox
+        * OY = oy
+        * OZ = oz
+        * ------------------------------------------ */
+        TriaxialData gyro_data;     // [градус/сек]
 
         void Init(){
             L3GD20_InitTypeDef InitStruct;
@@ -81,6 +90,8 @@ namespace STM_CppLib{
             L3GD20_Read(&high_bit, L3GD20_OUT_Z_H_ADDR, 1);
             L3GD20_Read(&low_bit,  L3GD20_OUT_Z_L_ADDR, 1);
             gyro_data.z_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / gyro_multiplier;
+
+            gyro_data *= GyroCoeff;     // Домножим на необходимый весовой коэффициент
         }
     };
 

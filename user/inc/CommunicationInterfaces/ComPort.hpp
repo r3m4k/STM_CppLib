@@ -3,30 +3,33 @@
 #define __COM_PORT_HPP
 
 /* Includes ------------------------------------------------------------------*/
-#include "I_CommunicationInterface.hpp"
 #include "VCP_F3.h"
 #include "hw_config.h"
 
 /* Defines -------------------------------------------------------------------*/
 
 // -----------------------------------------------------------------------------
-// Class comment
-class ComPort: public I_CommunicationInterface{
-public:
+namespace STM_CppLib{
 
-    ComPort() {}
-    ~ComPort() {}
+    // Class comment
+    class ComPort{
+    public:
 
-    // Инициализация COM порта
-    void Init() override {
-        VCP_ResetPort();    // Подтянули ножку d+ к нулю для правильной идентификации
-        VCP_Init();         // Инициализация VCP
-    }
+        ComPort() {}
+        ~ComPort() {}
 
-    // Отправка по COM порту пакета данных
-    void SendPackage(BasePackage& package){
-        CDC_Send_DATA(package.data_ptr, package.len);
-    }
-};
+        // Инициализация COM порта
+        void Init(){
+            VCP_ResetPort();    // Подтянули ножку d+ к нулю для правильной идентификации
+            VCP_Init();         // Инициализация VCP
+        }
+
+        // Отправка по COM порту пакета данных
+        void SendPackage(STM_Packages::BasePackage& package){
+            CDC_Send_DATA(package.data_ptr, package.len);
+        }
+    };
+
+} // namespace STM_CppLib
 
 #endif /*   __COM_PORT_HPP   */

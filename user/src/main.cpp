@@ -66,7 +66,7 @@ Leds leds;                          // Светодиоды на плате
 L3GD20 gyro_sensor;                 // Встроенный гироскоп
 LSM303DLHC acc_sensor;              // Встроенный датчик с акселерометром,
                                     // магнитным и температурным датчиками
-GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
+STM_Packages::GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
 
 // Интерфейсы связи
 ComPort com_port;

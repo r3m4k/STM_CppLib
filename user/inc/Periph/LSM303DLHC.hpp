@@ -12,6 +12,9 @@
 #define USE_MAGNETIC_SENSOR
 // #define USE_TEMPERATURE_SENSOR
 
+#define AccCoeff        0.01    // Коэффициент перевода из исходной системы измерения ускорения 
+#define MagCoeff        10^5    // Коэффициент перевода из Гауссов в нТ
+
 // -----------------------------------------------------------------------------
 
 namespace STM_CppLib{
@@ -22,10 +25,17 @@ namespace STM_CppLib{
         float LSM_Acc_Sensitivity;
 
     public:
-        TriaxialData acc_data;
+        /* --------------------------------------------
+        * В соответствии с документацией на LSM303DLHC:
+        * OX =  oy
+        * OY = -ox
+        * OZ =  oz
+        * ------------------------------------------ */
+
+        TriaxialData acc_data;      // [м/с**2]
 
     #ifdef USE_MAGNETIC_SENSOR
-        TriaxialData mag_data;
+        TriaxialData mag_data;      // [нТ]
     #endif /*   USE_MAGNETIC_SENSOR   */
 
     #ifdef USE_TEMPERATURE_SENSOR
@@ -169,9 +179,12 @@ namespace STM_CppLib{
             }
 
             /* Obtain the mg value for the three axis */
-            for (uint8_t i = 0; i < 3; i++){
-                acc_data[i] = static_cast<float>(pnRawData[i]) / LSM_Acc_Sensitivity;
-            }
+            // Заполним данные в соответствии с расположением осей
+            acc_data.x_coord =  static_cast<float>(pnRawData[1]) / LSM_Acc_Sensitivity;
+            acc_data.y_coord = -static_cast<float>(pnRawData[0]) / LSM_Acc_Sensitivity;
+            acc_data.x_coord =  static_cast<float>(pnRawData[2]) / LSM_Acc_Sensitivity;
+
+            acc_data *= AccCoeff;   // Домножим на необходимый весовой коэффициент
         }
 
         void ReadMag(){
@@ -213,22 +226,24 @@ namespace STM_CppLib{
                 Magn_Sensitivity_Z = LSM303DLHC_M_SENSITIVITY_Z_8_1Ga;
                 break;
             }
-
+            
+            // Заполним данные в соответствии с расположением осей
             // x_coord
-            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_H_M, &high_bit, 1);
-            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_L_M, &low_bit,  1);
+            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_H_M, &high_bit, 1);
+            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_M, &low_bit,  1);
             mag_data.x_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / Magn_Sensitivity_XY;
             
             // y_coord
-            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_H_M, &high_bit, 1);
-            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Y_L_M, &low_bit,  1);
-            mag_data.y_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / Magn_Sensitivity_XY;
+            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_H_M, &high_bit, 1);
+            LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_X_L_M, &low_bit,  1);
+            mag_data.y_coord = -static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / Magn_Sensitivity_XY;
 
             // z_coord
             LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_M, &high_bit, 1);
             LSM303DLHC_Read(MAG_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_M, &low_bit,  1);
             mag_data.z_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / Magn_Sensitivity_Z;
 
+            mag_data *= MagCoeff;   // Домножим на необходимый весовой коэффициент
         }
 
     #ifdef USE_TEMPERATURE_SENSOR

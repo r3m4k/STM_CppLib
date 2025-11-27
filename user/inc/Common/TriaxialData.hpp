@@ -38,6 +38,7 @@ public:
         if      (index == 0) return x_coord;
         else if (index == 1) return y_coord;
         else if (index == 2) return z_coord;
+        else return x_coord;
     }
 
     TriaxialData operator+(const TriaxialData& other) const {
