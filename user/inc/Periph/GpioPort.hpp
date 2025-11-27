@@ -27,10 +27,11 @@ namespace STM_CppLib{
                 case GPIO_Port::PortD: return GPIOD;
                 case GPIO_Port::PortE: return GPIOE;
                 case GPIO_Port::PortF: return GPIOF;
+                default: return nullptr;
             }
         }
 
-        constexpr uint32_t get_RCC_Periph(GPIO_Port port) noexcept{
+        constexpr uint32_t get_RCC_Periph(GPIO_Port port) noexcept {
             switch (port) {
                 case GPIO_Port::PortA: return RCC_AHBPeriph_GPIOA;
                 case GPIO_Port::PortB: return RCC_AHBPeriph_GPIOB;
@@ -38,6 +39,7 @@ namespace STM_CppLib{
                 case GPIO_Port::PortD: return RCC_AHBPeriph_GPIOD;
                 case GPIO_Port::PortE: return RCC_AHBPeriph_GPIOE;
                 case GPIO_Port::PortF: return RCC_AHBPeriph_GPIOF;
+                default: return 0xFFFF;
             }
         };
 

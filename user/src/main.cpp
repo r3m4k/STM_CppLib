@@ -68,9 +68,7 @@ LSM303DLHC acc_sensor;              // Встроенный датчик с ак
                                     // магнитным и температурным датчиками
 GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
 
-STM_Timer::Timer3<[](){
-    leds.ChangeLedStatus(LED8);
-}> timer3;   // Основной таймер, запускающий чтение и отправку данных 
+STM_Timer::Timer3<send_package> timer3;   // Основной таймер, запускающий чтение и отправку данных 
 STM_Timer::Timer4<[](){
     leds.ChangeLedStatus(LED6);
     leds.ChangeLedStatus(LED7);
@@ -80,9 +78,13 @@ STM_Timer::Timer4<[](){
 // на перевод пина Pin_PC1 из состояние Reset в состояние Set.
 // ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
 STM_GPIO::GPIO_Pin
-    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0>                       Pin_PC0;
+    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0> Pin_PC0;
+
+// Настройка внешнего прерывания, которое будет вызываться из main
 STM_GPIO::GPIO_Pin_EXTI
-    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data>  Pin_PC1;
+    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, [](){
+        gyronavt_package.UpdateData();
+    }> Pin_PC1;
 
 // ----------------------------------------------------------------------------
 
@@ -158,12 +160,12 @@ void InitAll(){
     leds.Init();
     gyro_sensor.Init();
     acc_sensor.Init();
-    // com_port.Init();
+    com_port.Init();
     Pin_PC0.InitPin();
     Pin_PC1.InitPinExti();
 
     // Настройка таймера для начала сбора данных
-    uint32_t tim3_period = 25;
+    uint32_t tim3_period = 24;
     timer3.Init(tim3_period);
 
     // Настройка таймера для мерцания светодиодами
@@ -176,9 +178,6 @@ void InitAll(){
 
 // Функция для обновления данных в посылке gyronavt_package
 void update_package_data(){
-    leds.LedOff(LED4);
-    leds.LedOn(LED4);
-
     gyronavt_package.UpdateData();
 }
 
@@ -186,8 +185,9 @@ void update_package_data(){
 
 // Функция для отправки посылки gyronavt_package по COM порту
 void send_package(){
+    leds.ChangeLedStatus(LED8);
     gyronavt_package.UpdateTime(++tick_counter);
-    // com_port.SendPackage(gyronavt_package);
+    com_port.SendPackage(gyronavt_package);
 }
 
 // -------------------------------------------------------------------------------
