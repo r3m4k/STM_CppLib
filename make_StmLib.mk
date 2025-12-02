@@ -4,7 +4,7 @@
 
 STM_STD_LIB_NAME = libstm_std_lib.a
 # LIBS += -L./${BIN_PLACE} -lstm_std_lib
-OBJECTS += ${STM_STD_LIB_OBJ}
+OBJECTS += ${STM_SPL_LIB_OBJ}
 
 SUBDIRS_OBJ += \
 ${STM32_PERIPH_OBJ_DIR} \
@@ -92,7 +92,7 @@ NEWLIB_OBJ_DIR = ${BIN_PLACE}/newlib
 DIAG_OBJ_DIR = ${BIN_PLACE}/diag
 CORTEXM_OBJ_DIR = ${BIN_PLACE}/cortexm
 
-STM_STD_LIB_OBJ := \
+STM_SPL_LIB_OBJ := \
 $(patsubst ${STM32_PERIPH_DIR}/%.c, ${STM32_PERIPH_OBJ_DIR}/%.o,${STM32_PERIPH_SRC}) \
 $(patsubst ${CMSIS_DIR}/%.c, ${CMSIS_OBJ_DIR}/%.o,${CMSIS_SRC}) \
 $(patsubst ${NEWLIB_DIR}/%.c, ${NEWLIB_OBJ_DIR}/%.o,${NEWLIB_SRC_C}) \
@@ -100,24 +100,19 @@ $(patsubst ${NEWLIB_DIR}/%.cpp, ${NEWLIB_OBJ_DIR}/%.opp,${NEWLIB_SRC_CPP}) \
 $(patsubst ${DIAG_DIR}/%.c, ${DIAG_OBJ_DIR}/%.o,${DIAG_SRC}) \
 $(patsubst ${CORTEXM_DIR}/%.c, ${CORTEXM_OBJ_DIR}/%.o,${CORTEXM_SRC})
 
-# ---------------------------
-# Правила
-# ---------------------------
 
-rebuild_stm_std_lib: clean_stm_std_lib info_stm_std_lib STM32_STD_LIB
+# --------------------------------
+# Правила для сборки STM32_SPL_LIB
+# --------------------------------
+
+__rebuild_stm_std_lib: clean_stm_std_lib  __build_stm32f3x_spl_lib
 	@echo # ---------------------------
 	@echo Rebuilding ${STM_USB_LIB_NAME} completed successfully
 	@echo # ---------------------------
 
 # ---------------------------
 
-STM32_STD_LIB: ${STM_STD_LIB_OBJ}
-
-# @echo # ---------------------------
-# @echo Building static library ${STM_STD_LIB_NAME}
-# @echo ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} $${STM_STD_LIB_OBJ}"
-# @ar rcs ${BIN_PLACE}/${STM_STD_LIB_NAME} ${STM_STD_LIB_OBJ}
-# @echo # ---------------------------
+__build_stm32f3x_spl_lib: ${STM_SPL_LIB_OBJ}
 
 # ---------------------------
 
@@ -146,10 +141,11 @@ ${CORTEXM_OBJ_DIR}/%.o: ${CORTEXM_DIR}/%.c
 	@${CC} ${GCC_FLAGS} ${DEFINES} ${INCLUDES} $< -o $@
 
 # ---------------------------
-clean_stm_std_lib:
+
+__clean_stm_std_lib:
 	@echo # ---------------------------
 	@echo Deleting ${STM_STD_LIB_NAME} and its object files
-	@rm -f ${STM_STD_LIB_OBJ} ${BIN_PLACE}/${STM_STD_LIB_NAME}
+	@rm -f ${STM_SPL_LIB_OBJ} ${BIN_PLACE}/${STM_STD_LIB_NAME}
 	@echo # ---------------------------
 
 # ---------------------------
