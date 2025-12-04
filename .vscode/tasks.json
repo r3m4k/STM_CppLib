@@ -9,9 +9,9 @@
             "command": "make",
             "args": [
                 "-C",
-                "${workspaceFolder}",
+                "${workspaceFolder}\\make",
                 "-f",
-                "Makefile.mk",
+                "make/Makefile.mk",
                 "rebuild_all",
                 "SYSTEM=windows",
                 "PROGRAM_NAME=${config:myProject.project_name}"
@@ -35,7 +35,7 @@
             "command": "mingw32-make",
             "args": [
                 "-C",
-                "${workspaceFolder}",
+                "${workspaceFolder}\\make",
                 "-f",
                 "Makefile.mk",
                 "rebuild_user",
@@ -61,7 +61,7 @@
             "command": "mingw32-make",
             "args": [
                 "-C",
-                "${workspaceFolder}",
+                "${workspaceFolder}\\make",
                 "-f",
                 "Makefile.mk",
                 "build_user",

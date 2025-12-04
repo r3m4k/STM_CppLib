@@ -7,16 +7,20 @@
 # Зададим её тут, чтобы при запуске makefile из командной строки не задавать её
 SYSTEM := windows	
 
+# Названеи проекта
 PROGRAM_NAME := STM_PROJECT
+
+# Директория с исходным кодом относительно Makefile.mk
+SOURCE_FILE_DIR = ..
 
 # Название итогового исполняемого файла
 BINARY = ${PROGRAM_NAME}.elf
 
 # Место хранения полученных объектных файлов
 ifeq ($(SYSTEM), windows)
-	BIN_PLACE = Debug_Win
+	BIN_PLACE = ${SOURCE_FILE_DIR}/Debug_Win
 else ifeq ($(SYSTEM), linux)
-	BIN_PLACE = Debug_Lin
+	BIN_PLACE = ${SOURCE_FILE_DIR}/Debug_Lin
 else
     $(error The OS is not specified)
 endif
@@ -60,25 +64,25 @@ GPP_FLAGS = -std=gnu++2a ${COMPILER_FLAGS} -c -fno-exceptions -fno-rtti -fno-use
 
 INCLUDES = \
 -I"${GCC_PLACE}arm-none-eabi/include" \
--I"include" \
--I"user" \
--I"user/inc" \
--I"user/inc/Common" \
--I"user/inc/CommunicationInterfaces" \
--I"user/inc/Packages" \
--I"user/inc/Periph" \
--I"user/inc/Timers" \
--I"system/include" \
--I"system/include/cmsis" \
--I"system/include/stm32f3-stdperiph" \
--I"system/include/additionally" \
--I"system/USB_LIB/include"
+-I"${SOURCE_FILE_DIR}/include" \
+-I"${SOURCE_FILE_DIR}/user" \
+-I"${SOURCE_FILE_DIR}/user/inc" \
+-I"${SOURCE_FILE_DIR}/user/inc/Common" \
+-I"${SOURCE_FILE_DIR}/user/inc/CommunicationInterfaces" \
+-I"${SOURCE_FILE_DIR}/user/inc/Packages" \
+-I"${SOURCE_FILE_DIR}/user/inc/Periph" \
+-I"${SOURCE_FILE_DIR}/user/inc/Timers" \
+-I"${SOURCE_FILE_DIR}/system/include" \
+-I"${SOURCE_FILE_DIR}/system/include/cmsis" \
+-I"${SOURCE_FILE_DIR}/system/include/stm32f3-stdperiph" \
+-I"${SOURCE_FILE_DIR}/system/include/additionally" \
+-I"${SOURCE_FILE_DIR}/system/USB_LIB/include"
 
 # флаги для линковщика
 LINK_FLAGS = ${COMPILER_FLAGS} \
--T "ldscripts/mem.ld" \
--T "ldscripts/libs.ld" \
--T "ldscripts/sections.ld" \
+-T "${SOURCE_FILE_DIR}/ldscripts/mem.ld" \
+-T "${SOURCE_FILE_DIR}/ldscripts/libs.ld" \
+-T "${SOURCE_FILE_DIR}/ldscripts/sections.ld" \
 -L"${PROJ}ldscripts" \
 -nostartfiles -Xlinker --gc-sections -Wl,-Map,${BIN_PLACE}/${PROGRAM_NAME}.map # --specs=nano.specs 
 

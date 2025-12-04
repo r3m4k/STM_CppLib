@@ -11,7 +11,7 @@ USER_DEFINES =
 # Исходные файлы пользователя
 # ----------------------------
 
-USER_DIR = user/src
+USER_DIR = ${SOURCE_FILE_DIR}/user/src
 
 USER_SRC_C = \
 

@@ -18,7 +18,7 @@ ${CORTEXM_OBJ_DIR}
 # ---------------------------
 
 # stm32f3-stdperiph
-STM32_PERIPH_DIR = system/src/stm32f3-stdperiph
+STM32_PERIPH_DIR = ${SOURCE_FILE_DIR}/system/src/stm32f3-stdperiph
 
 STM32_PERIPH_SRC = \
 ${STM32_PERIPH_DIR}/stm32f30x_adc.c \
@@ -49,14 +49,14 @@ ${STM32_PERIPH_DIR}/stm32f3_discovery_l3gd20.c \
 ${STM32_PERIPH_DIR}/stm32f3_discovery_lsm303dlhc.c
 
 # cmsis
-CMSIS_DIR = system/src/cmsis
+CMSIS_DIR = ${SOURCE_FILE_DIR}/system/src/cmsis
 
 CMSIS_SRC = \
 ${CMSIS_DIR}/system_stm32f30x.c \
 ${CMSIS_DIR}/vectors_stm32f30x.c
 
 # newlib
-NEWLIB_DIR = system/src/newlib
+NEWLIB_DIR = ${SOURCE_FILE_DIR}/system/src/newlib
 
 NEWLIB_SRC_C = \
 ${NEWLIB_DIR}/assert.c \
@@ -69,14 +69,14 @@ NEWLIB_SRC_CPP = \
 ${NEWLIB_DIR}/_cxx.cpp
 
 # diag
-DIAG_DIR = system/src/diag
+DIAG_DIR = ${SOURCE_FILE_DIR}/system/src/diag
 
 DIAG_SRC = \
 ${DIAG_DIR}/trace_impl.c \
 ${DIAG_DIR}/Trace.c
 
 # cortexm
-CORTEXM_DIR = system/src/cortexm
+CORTEXM_DIR = ${SOURCE_FILE_DIR}/system/src/cortexm
 
 CORTEXM_SRC = \
 ${CORTEXM_DIR}/exception_handlers.c \
