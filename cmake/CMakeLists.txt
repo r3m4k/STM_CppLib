@@ -1,0 +1,159 @@
+cmake_minimum_required(VERSION 4.0)
+project(STM_Gyronavt)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(system/include)
+include_directories(system/include/additionally)
+include_directories(system/include/arm)
+include_directories(system/include/cmsis)
+include_directories(system/include/cortexm)
+include_directories(system/include/diag)
+include_directories(system/include/stm32f3-stdperiph)
+include_directories(system/USB_LIB/include)
+include_directories(user/inc)
+include_directories(user/inc/Common)
+include_directories(user/inc/CommunicationInterfaces)
+include_directories(user/inc/Packages)
+include_directories(user/inc/Periph)
+include_directories(user/inc/Timers)
+
+add_executable(STM_Gyronavt
+        system/include/additionally/platform_config.h
+        system/include/arm/semihosting.h
+        system/include/cmsis/arm_common_tables.h
+        system/include/cmsis/arm_const_structs.h
+        system/include/cmsis/arm_math.h
+        system/include/cmsis/cmsis_device.h
+        system/include/cmsis/core_cm0.h
+        system/include/cmsis/core_cm0plus.h
+        system/include/cmsis/core_cm3.h
+        system/include/cmsis/core_cm4.h
+        system/include/cmsis/core_cm4_simd.h
+        system/include/cmsis/core_cmFunc.h
+        system/include/cmsis/core_cmInstr.h
+        system/include/cmsis/core_sc000.h
+        system/include/cmsis/core_sc300.h
+        system/include/cmsis/stm32f30x.h
+        system/include/cmsis/stm32f30x_conf.h
+        system/include/cmsis/system_stm32f30x.h
+        system/include/cortexm/ExceptionHandlers.h
+        system/include/diag/Trace.h
+        system/include/stm32f3-stdperiph/stm32f30x_adc.h
+        system/include/stm32f3-stdperiph/stm32f30x_can.h
+        system/include/stm32f3-stdperiph/stm32f30x_comp.h
+        system/include/stm32f3-stdperiph/stm32f30x_crc.h
+        system/include/stm32f3-stdperiph/stm32f30x_dac.h
+        system/include/stm32f3-stdperiph/stm32f30x_dbgmcu.h
+        system/include/stm32f3-stdperiph/stm32f30x_dma.h
+        system/include/stm32f3-stdperiph/stm32f30x_exti.h
+        system/include/stm32f3-stdperiph/stm32f30x_flash.h
+        system/include/stm32f3-stdperiph/stm32f30x_gpio.h
+        system/include/stm32f3-stdperiph/stm32f30x_i2c.h
+        system/include/stm32f3-stdperiph/stm32f30x_it.h
+        system/include/stm32f3-stdperiph/stm32f30x_iwdg.h
+        system/include/stm32f3-stdperiph/stm32f30x_misc.h
+        system/include/stm32f3-stdperiph/stm32f30x_opamp.h
+        system/include/stm32f3-stdperiph/stm32f30x_pwr.h
+        system/include/stm32f3-stdperiph/stm32f30x_rcc.h
+        system/include/stm32f3-stdperiph/stm32f30x_rtc.h
+        system/include/stm32f3-stdperiph/stm32f30x_spi.h
+        system/include/stm32f3-stdperiph/stm32f30x_syscfg.h
+        system/include/stm32f3-stdperiph/stm32f30x_tim.h
+        system/include/stm32f3-stdperiph/stm32f30x_usart.h
+        system/include/stm32f3-stdperiph/stm32f30x_wwdg.h
+        system/include/stm32f3-stdperiph/stm32f3_discovery.h
+        system/include/stm32f3-stdperiph/stm32f3_discovery_l3gd20.h
+        system/include/stm32f3-stdperiph/stm32f3_discovery_lsm303dlhc.h
+        system/src/additionally/VCP_F3.c
+        system/src/cmsis/system_stm32f30x.c
+        system/src/cmsis/vectors_stm32f30x.c
+        system/src/cortexm/_initialize_hardware.c
+        system/src/cortexm/_reset_hardware.c
+        system/src/cortexm/exception_handlers.c
+        system/src/diag/Trace.c
+        system/src/diag/trace_impl.c
+        system/src/newlib/_cxx.cpp
+        system/src/newlib/_exit.c
+        system/src/newlib/_sbrk.c
+        system/src/newlib/_startup.c
+        system/src/newlib/_syscalls.c
+        system/src/newlib/assert.c
+        system/src/stm32f3-stdperiph/stm32f30x_adc.c
+        system/src/stm32f3-stdperiph/stm32f30x_can.c
+        system/src/stm32f3-stdperiph/stm32f30x_comp.c
+        system/src/stm32f3-stdperiph/stm32f30x_crc.c
+        system/src/stm32f3-stdperiph/stm32f30x_dac.c
+        system/src/stm32f3-stdperiph/stm32f30x_dbgmcu.c
+        system/src/stm32f3-stdperiph/stm32f30x_dma.c
+        system/src/stm32f3-stdperiph/stm32f30x_exti.c
+        system/src/stm32f3-stdperiph/stm32f30x_flash.c
+        system/src/stm32f3-stdperiph/stm32f30x_gpio.c
+        system/src/stm32f3-stdperiph/stm32f30x_i2c.c
+        system/src/stm32f3-stdperiph/stm32f30x_it.c
+        system/src/stm32f3-stdperiph/stm32f30x_iwdg.c
+        system/src/stm32f3-stdperiph/stm32f30x_misc.c
+        system/src/stm32f3-stdperiph/stm32f30x_opamp.c
+        system/src/stm32f3-stdperiph/stm32f30x_pwr.c
+        system/src/stm32f3-stdperiph/stm32f30x_rcc.c
+        system/src/stm32f3-stdperiph/stm32f30x_rtc.c
+        system/src/stm32f3-stdperiph/stm32f30x_spi.c
+        system/src/stm32f3-stdperiph/stm32f30x_syscfg.c
+        system/src/stm32f3-stdperiph/stm32f30x_tim.c
+        system/src/stm32f3-stdperiph/stm32f30x_usart.c
+        system/src/stm32f3-stdperiph/stm32f30x_wwdg.c
+        system/src/stm32f3-stdperiph/stm32f3_discovery.c
+        system/src/stm32f3-stdperiph/stm32f3_discovery_l3gd20.c
+        system/src/stm32f3-stdperiph/stm32f3_discovery_lsm303dlhc.c
+        system/USB_LIB/include/hw_config.h
+        system/USB_LIB/include/usb_conf.h
+        system/USB_LIB/include/usb_core.h
+        system/USB_LIB/include/usb_def.h
+        system/USB_LIB/include/usb_desc.h
+        system/USB_LIB/include/usb_init.h
+        system/USB_LIB/include/usb_int.h
+        system/USB_LIB/include/usb_istr.h
+        system/USB_LIB/include/usb_lib.h
+        system/USB_LIB/include/usb_mem.h
+        system/USB_LIB/include/usb_prop.h
+        system/USB_LIB/include/usb_pwr.h
+        system/USB_LIB/include/usb_regs.h
+        system/USB_LIB/include/usb_sil.h
+        system/USB_LIB/include/usb_type.h
+        system/USB_LIB/include/VCP_F3.h
+        system/USB_LIB/src/hw_config.c
+        system/USB_LIB/src/usb_core.c
+        system/USB_LIB/src/usb_desc.c
+        system/USB_LIB/src/usb_endp.c
+        system/USB_LIB/src/usb_init.c
+        system/USB_LIB/src/usb_int.c
+        system/USB_LIB/src/usb_istr.c
+        system/USB_LIB/src/usb_mem.c
+        system/USB_LIB/src/usb_prop.c
+        system/USB_LIB/src/usb_pwr.c
+        system/USB_LIB/src/usb_regs.c
+        system/USB_LIB/src/usb_sil.c
+        system/USB_LIB/src/VCP_F3.cpp
+        user/inc/Common/BaseIRQDevice.hpp
+        user/inc/Common/Consts.hpp
+        user/inc/Common/TriaxialData.hpp
+        user/inc/CommunicationInterfaces/ComPort.hpp
+        user/inc/CommunicationInterfaces/I_CommunicationInterface.hpp
+        user/inc/CommunicationInterfaces/InputCommands.hpp
+        user/inc/CommunicationInterfaces/USART.hpp
+        user/inc/Packages/BasePackage.hpp
+        user/inc/Packages/FloatBytes.hpp
+        user/inc/Packages/GyronavtPackage.hpp
+        user/inc/Periph/Exti.hpp
+        user/inc/Periph/GpioPin.hpp
+        user/inc/Periph/GpioPort.hpp
+        user/inc/Periph/L3GD20.hpp
+        user/inc/Periph/Leds.hpp
+        user/inc/Periph/LSM303DLHC.hpp
+        user/inc/Periph/Periphery.hpp
+        user/inc/Timers/BaseTimer.hpp
+        user/inc/Timers/GPTimers.hpp
+        user/inc/Timers/TimerConfig.hpp
+        user/inc/main.h
+        user/src/main.cpp
+        user/src/main.cpp)
