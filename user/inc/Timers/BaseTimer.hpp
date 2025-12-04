@@ -64,7 +64,7 @@ namespace STM_CppLib{
 
     // -------------------------------------------------------------------------
 
-    enum class TimerTypes {Timer2, Timer3, Timer4};
+    enum class TimerTypes {Timer1, Timer2, Timer3, Timer4};
 
     template<TimerTypes timer_type>
     class TimerDescriptor{

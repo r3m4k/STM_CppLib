@@ -46,6 +46,14 @@ namespace STM_CppLib{
         template<TimerTypes timer_type, auto external_irq_handler>
         class GPTimer: public BaseTimer, public BaseIRQDevice<GPTimer<timer_type, external_irq_handler>, 
                                                                 TimerDescriptor<timer_type>::IRQn>{
+
+            static_assert(
+                timer_type == TimerTypes::Timer2 || 
+                timer_type == TimerTypes::Timer3 || 
+                timer_type == TimerTypes::Timer4, 
+                "timer_type not is general purpose timer"
+            );
+
         public:
             GPTimer(){
                 this->irq_device_ptr = this;

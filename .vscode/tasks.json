@@ -11,7 +11,7 @@
                 "-C",
                 "${workspaceFolder}\\make",
                 "-f",
-                "make/Makefile.mk",
+                "Makefile.mk",
                 "rebuild_all",
                 "SYSTEM=windows",
                 "PROGRAM_NAME=${config:myProject.project_name}"
