@@ -74,6 +74,7 @@ namespace STM_CppLib{
                 case TimerTypes::Timer2: return TIM2;
                 case TimerTypes::Timer3: return TIM3;
                 case TimerTypes::Timer4: return TIM4;
+                default: return nullptr;
             }
         };
 

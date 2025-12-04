@@ -43,7 +43,7 @@ namespace STM_CppLib{
         
         // ---------------------------------------------------------------------
         // Шаблонный класс для работы с General Purpose Timer
-        template<TimerTypes timer_type, handler_t external_irq_handler>
+        template<TimerTypes timer_type, auto external_irq_handler>
         class GPTimer: public BaseTimer, public BaseIRQDevice<GPTimer<timer_type, external_irq_handler>, 
                                                                 TimerDescriptor<timer_type>::IRQn>{
         public:
@@ -93,13 +93,13 @@ namespace STM_CppLib{
         // ---------------------------------------------------------------------
 
         // Псевдонимы таймеров для удобства использования 
-        template<handler_t external_irq_handler>
+        template<auto external_irq_handler>
         using Timer2 = GPTimer<TimerTypes::Timer2, external_irq_handler>;
 
-        template<handler_t external_irq_handler>
+        template<auto external_irq_handler>
         using Timer3 = GPTimer<TimerTypes::Timer3, external_irq_handler>;
 
-        template<handler_t external_irq_handler>
+        template<auto external_irq_handler>
         using Timer4 = GPTimer<TimerTypes::Timer4, external_irq_handler>;
 
         // ---------------------------------------------------------------------

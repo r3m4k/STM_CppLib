@@ -114,7 +114,7 @@ int main()
 
 	RCC_GetClocksFreq(&RCC_Clocks);
 	if (SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000))
-		while(1);       //will end up in this infinite loop if there was an error with Systick_Config
+		while(true) {}     //will end up in this infinite loop if there was an error with Systick_Config
     
     // ##########################
 
