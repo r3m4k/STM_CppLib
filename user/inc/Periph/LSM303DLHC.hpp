@@ -182,7 +182,7 @@ namespace STM_CppLib{
             // Заполним данные в соответствии с расположением осей
             acc_data.x_coord =  static_cast<float>(pnRawData[1]) / LSM_Acc_Sensitivity;
             acc_data.y_coord = -static_cast<float>(pnRawData[0]) / LSM_Acc_Sensitivity;
-            acc_data.x_coord =  static_cast<float>(pnRawData[2]) / LSM_Acc_Sensitivity;
+            acc_data.z_coord =  static_cast<float>(pnRawData[2]) / LSM_Acc_Sensitivity;
 
             acc_data *= AccCoeff;   // Домножим на необходимый весовой коэффициент
         }

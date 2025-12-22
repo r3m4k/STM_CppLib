@@ -14,7 +14,7 @@
 /* Defines -------------------------------------------------------------------*/
 #define Preamble            0xFB
 #define DevAdr              0xFF
-#define RegAdr              0x00
+#define RegAdr              0xFF
 
 #define BarConst            3.14159f
 #define DefaultStatus       0x32
@@ -32,7 +32,7 @@ namespace STM_CppLib{
     // Посылка, согласно протоколу Гиронавт
     class GyronavtPackage: public BasePackage{
     
-        struct package_body
+        struct [[gnu::packed]] package_body
         {
             uint8_t header[4] = {Preamble, DevAdr, RegAdr, 0};
             uint32_t time = 0;
@@ -42,9 +42,15 @@ namespace STM_CppLib{
             float bar = BarConst;
         } package_body;
         
+        static_assert(
+            (sizeof(package_body) - sizeof(package_body.header)) == 48,
+            "Incorrect length of data inside the Gyronavt package"
+        );
+
     public:
         GyronavtPackage(){
-            package_body.header[3] = sizeof(package_body);
+            // Последним байтом заголовка необходимо задать длину данных внутри посылки
+            package_body.header[3] = sizeof(package_body) - sizeof(package_body.header);
             
             len = sizeof(package_body);
             data_ptr = reinterpret_cast<uint8_t*>(&package_body);
@@ -66,7 +72,9 @@ namespace STM_CppLib{
         uint8_t CountControlSum(){
             uint8_t crc = 0xFF;
 
-            for (uint8_t i = 0; i < len; i++){
+            // Условие len-1 необходимо, чтобы не учитывать в расчёте контрольной суммы
+            // не учитывать старое значение контрольной суммы
+            for (uint8_t i = 0; i < len-1; i++){
                 crc ^= data_ptr[i];
 
                 for(uint8_t j = 0; j < 8; j++)
