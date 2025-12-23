@@ -32,7 +32,8 @@ namespace STM_CppLib{
     // Посылка, согласно протоколу Гиронавт
     class GyronavtPackage: public BasePackage{
     
-        struct [[gnu::packed]] package_body
+        #pragma pack(1)
+        struct package_body_t
         {
             uint8_t header[4] = {Preamble, DevAdr, RegAdr, 0};
             uint32_t time = 0;
@@ -40,10 +41,12 @@ namespace STM_CppLib{
             uint8_t hole[3] = {0};
             TriaxialData acc_data, gyro_data, mag_data;            
             float bar = BarConst;
+            uint8_t control_sum = 0;
         } package_body;
-        
+        #pragma pack()
+
         static_assert(
-            (sizeof(package_body) - sizeof(package_body.header)) == 48,
+            (sizeof(package_body) - sizeof(package_body.header) - sizeof(package_body.control_sum)) == 48,
             "Incorrect length of data inside the Gyronavt package"
         );
 
@@ -64,6 +67,10 @@ namespace STM_CppLib{
 
         void UpdateTime(uint32_t new_time){
             package_body.time = new_time;
+        }
+
+        void UpdateControlSum(){
+            package_body.control_sum = CountControlSum();
         }
         
     private:

@@ -54,7 +54,7 @@ namespace STM_CppLib{
             GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
             GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-            USART_InitStructure.USART_BaudRate = Speed;//921600;//115200;
+            USART_InitStructure.USART_BaudRate = 921600; //115200;
             USART_InitStructure.USART_WordLength = USART_WordLength_8b;
             USART_InitStructure.USART_StopBits = USART_StopBits_2;
             USART_InitStructure.USART_Parity = USART_Parity_No;

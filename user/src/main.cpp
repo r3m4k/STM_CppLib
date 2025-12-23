@@ -70,8 +70,8 @@ LSM303DLHC acc_sensor;              // Встроенный датчик с ак
 STM_Packages::GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
 
 // Интерфейсы связи
-// ComPort com_port;
-USARTx usart1;
+ComPort com_port;
+// USARTx usart1;
 
 // Используемые таймеры
 STM_Timer::Timer3<send_package> timer3;   // Основной таймер, запускающий чтение и отправку данных 
@@ -166,8 +166,8 @@ void InitAll(){
     leds.Init();
     gyro_sensor.Init();
     acc_sensor.Init();
-    // com_port.Init();
-    usart1.Init();
+    com_port.Init();
+    // usart1.Init();
     Pin_PC1.InitPinExti();
 
     // Настройка таймера для начала сбора данных
@@ -193,8 +193,9 @@ void update_package_data(){
 void send_package(){
     leds.ChangeLedStatus(LED8);
     gyronavt_package.UpdateTime(++tick_counter);
-    // com_port.SendPackage(gyronavt_package);
-    usart1.SendPackage(gyronavt_package);
+    gyronavt_package.UpdateControlSum();
+    com_port.SendPackage(gyronavt_package);
+    // usart1.SendPackage(gyronavt_package);
 }
 
 // -------------------------------------------------------------------------------
