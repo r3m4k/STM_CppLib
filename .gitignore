@@ -4,3 +4,7 @@ Debug_Win/
 Осцилограмма.BMP
 
 .idea/
+
+.obsidian/
+
+cmake/

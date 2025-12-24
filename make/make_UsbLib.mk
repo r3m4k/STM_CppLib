@@ -12,7 +12,7 @@ SUBDIRS_OBJ += ${USB_OBJ_DIR}
 # Исходные файлы
 # ---------------------------
 
-USB_SRC_DIR = ${SOURCE_FILE_DIR}/system/USB_LIB/src
+USB_SRC_DIR = ${SOURCE_DIR}/system/USB_LIB/src
 
 USB_SRC_C = \
 ${USB_SRC_DIR}/hw_config.c \
