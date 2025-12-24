@@ -92,6 +92,7 @@ void update_package_data();
 void send_package();
 
 void UserEP3_OUT_Callback(uint8_t *buffer);
+void USART1_IRQHandler(void);
 
 void Delay(__IO uint32_t nTime);
 void TimingDelay_Decrement(void);

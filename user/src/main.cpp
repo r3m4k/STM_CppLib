@@ -71,7 +71,7 @@ STM_Packages::GyronavtPackage gyronavt_package;   // Пакет данных в 
 
 // Интерфейсы связи
 ComPort com_port;
-// USARTx usart1;
+USARTx usart1;
 
 // Используемые таймеры
 STM_Timer::Timer3<send_package> timer3;   // Основной таймер, запускающий чтение и отправку данных 
@@ -167,7 +167,7 @@ void InitAll(){
     gyro_sensor.Init();
     acc_sensor.Init();
     com_port.Init();
-    // usart1.Init();
+    usart1.Init();
     Pin_PC1.InitPinExti();
 
     // Настройка таймера для начала сбора данных
@@ -195,7 +195,7 @@ void send_package(){
     gyronavt_package.UpdateTime(++tick_counter);
     gyronavt_package.UpdateControlSum();
     com_port.SendPackage(gyronavt_package);
-    // usart1.SendPackage(gyronavt_package);
+    usart1.SendPackage(gyronavt_package);
 }
 
 // -------------------------------------------------------------------------------
@@ -203,6 +203,20 @@ void send_package(){
 void UserEP3_OUT_Callback(uint8_t *buffer)
 {
     buffer[0] = 0;
+}
+
+// -------------------------------------------------------------------------------
+
+void USART1_IRQHandler(void)
+{
+    if (USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) // было прерывание от приемника
+        __NOP();
+
+    if (USART_GetITStatus(USART1, USART_IT_TXE) != RESET){ // было прерывание от передатчика
+        while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){} // дожидаюсь завершения выдачи текущего байта и отключаю прерывания от выдачи
+        USART_ITConfig(USART1, USART_IT_TXE, DISABLE);
+    }
+    USART_ClearITPendingBit(USART1, USART_IT_ORE);
 }
 
 // -------------------------------------------------------------------------------
