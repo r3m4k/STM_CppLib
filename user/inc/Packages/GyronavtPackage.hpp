@@ -13,7 +13,7 @@
 
 /* Defines -------------------------------------------------------------------*/
 #define Preamble            0xFB
-#define DevAdr              0xFF
+#define DevAdr              0x01
 #define RegAdr              0xFF
 
 #define BarConst            3.14159f
@@ -53,7 +53,7 @@ namespace STM_CppLib{
     public:
         GyronavtPackage(){
             // Последним байтом заголовка необходимо задать длину данных внутри посылки
-            package_body.header[3] = sizeof(package_body) - sizeof(package_body.header);
+            package_body.header[3] = 12;   // На стороне приёмника len = (bt & 0x7f) * 4;;
             
             len = sizeof(package_body);
             data_ptr = reinterpret_cast<uint8_t*>(&package_body);
@@ -77,13 +77,13 @@ namespace STM_CppLib{
 
         // Вычисление контрольной суммы согласно документации
         uint8_t CountControlSum(){
-            uint8_t crc = 0xFF;
 
+            uint8_t crc = 0xFF;
+           
             // Условие len-1 необходимо, чтобы не учитывать в расчёте контрольной суммы
             // не учитывать старое значение контрольной суммы
-            for (uint8_t i = 0; i < len-1; i++){
+            for (uint8_t i = 0; i < len - 1; i++){
                 crc ^= data_ptr[i];
-
                 for(uint8_t j = 0; j < 8; j++)
                     crc = crc & 0x80 ? (crc << 1) ^ 0x31 : crc << 1;
             }

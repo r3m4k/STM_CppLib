@@ -83,7 +83,7 @@ STM_Timer::Timer4<[](){
 // Пин Pin_PC0 используется для инициализации прерывания EXTI_Line1, настроенное
 // на перевод пина Pin_PC1 из состояние Reset в состояние Set.
 // ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
-// STM_GPIO::GPIO_Pin <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0> Pin_PC0;
+STM_GPIO::GPIO_Pin <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0> Pin_PC0;
 
 // Настройка внешнего прерывания, которое будет вызываться из main
 STM_GPIO::GPIO_Pin_EXTI
@@ -151,7 +151,16 @@ int main()
             acc_sensor.ReadData();
             
             // Обновим данные gyronavt_package в прерывании EXTI_Line1 
+
+            /* Программная инициализация прерывания */
             EXTI_GenerateSWInterrupt(EXTI_Line1);
+
+            /* ***************************
+            Инициализация прерывания через поднятие ножки PC0.
+            Для этого необходимо соединить ножки PC0 и PC1 с помощью джампера!
+            *************************** */
+            // Pin_PC0.SetPin();
+            // Pin_PC0.ResetPin();
             
             leds.LedOff(LED9);
 
@@ -168,6 +177,7 @@ void InitAll(){
     acc_sensor.Init();
     com_port.Init();
     usart1.Init();
+    Pin_PC0.InitPin();
     Pin_PC1.InitPinExti();
 
     // Настройка таймера для начала сбора данных
@@ -191,11 +201,21 @@ void update_package_data(){
 
 // Функция для отправки посылки gyronavt_package по COM порту
 void send_package(){
+    // Изменим состояние светодиода при отправке сообщения
     leds.ChangeLedStatus(LED8);
+
+    // Обновим счётчик таймера и контрольную сумму перед отправкой
     gyronavt_package.UpdateTime(++tick_counter);
     gyronavt_package.UpdateControlSum();
+
+    // Отправим посылку по com порту и usart1
+    leds.LedOn(LED4);
     com_port.SendPackage(gyronavt_package);
+    leds.LedOff(LED4);
+
+    leds.LedOn(LED5);
     usart1.SendPackage(gyronavt_package);
+    leds.LedOff(LED5);
 }
 
 // -------------------------------------------------------------------------------

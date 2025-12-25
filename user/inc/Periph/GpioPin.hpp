@@ -51,11 +51,11 @@ namespace STM_CppLib{
             }
 
             void SetPin(){
-                GPIO_SetBits(GPIO_PortDescriptor<port>::get_GPIO_type(), (1U << pin_source));
+                GPIO_SetBits(GPIO_PortDescriptor<port>::get_GPIO_Type(), (1U << pin_source));
             }
 
             void ResetPin(){
-                GPIO_ResetBits(GPIO_PortDescriptor<port>::get_GPIO_type(), (1U << pin_source));
+                GPIO_ResetBits(GPIO_PortDescriptor<port>::get_GPIO_Type(), (1U << pin_source));
             }
 
         };
@@ -79,7 +79,7 @@ namespace STM_CppLib{
 
             void InitPinExti(
                 GPIOMode_TypeDef GPIO_Mode = GPIO_Mode_IN,
-                GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_NOPULL,
+                GPIOPuPd_TypeDef GPIO_PuPd = GPIO_PuPd_DOWN,
                 GPIO_InitTypeDef* GPIO_InitStructure_ptr = nullptr,
                 EXTI_InitTypeDef* EXTI_InitStructure_ptr = nullptr,
                 NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr
