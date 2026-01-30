@@ -10,6 +10,11 @@
 #include "SensorScaler.hpp"
 
 /* Defines -------------------------------------------------------------------*/
+#define LSM_Acc_Sensitivity_2g     (float)     1.0f            /*!< accelerometer sensitivity with 2 g full scale [LSB/mg] */
+#define LSM_Acc_Sensitivity_4g     (float)     0.5f            /*!< accelerometer sensitivity with 4 g full scale [LSB/mg] */
+#define LSM_Acc_Sensitivity_8g     (float)     0.25f           /*!< accelerometer sensitivity with 8 g full scale [LSB/mg] */
+#define LSM_Acc_Sensitivity_16g    (float)     0.0834f         /*!< accelerometer sensitivity with 12 g full scale [LSB/mg] */
+
 #define USE_MAGNETIC_SENSOR
 // #define USE_TEMPERATURE_SENSOR
 
@@ -45,8 +50,8 @@ namespace STM_CppLib{
     #endif /*    USE_TEMPERATURE_SENSOR   */
 
     private:
-        float LSM_Acc_Sensitivity;
-        SensorScaller<LSM303DLHC> acc_scaller{this, &acc_data, TrueMoscowAcc};
+        float LSM_Acc_Sensitivity;      // Чувствительность акселерометра
+        float acc_scale_rate = 1.0f;    // Масштабирующий коэффициент
 
         // ---------------------------------------------------------------------
         // Методы класса
@@ -58,7 +63,10 @@ namespace STM_CppLib{
             AccInit();
             MagInit();
 
+            // Вычислим масштабирующий коэффициент
+            SensorScaller<LSM303DLHC> acc_scaller{this, &acc_data, TrueMoscowAcc};
             acc_scaller.Init();
+            acc_scale_rate = acc_scaller.scale_rate;
         }
     
     private:
@@ -193,8 +201,8 @@ namespace STM_CppLib{
             acc_data.y_coord = -static_cast<float>(pnRawData[0]) / LSM_Acc_Sensitivity;
             acc_data.z_coord =  static_cast<float>(pnRawData[2]) / LSM_Acc_Sensitivity;
 
-            acc_data *= AccCoeff;                   // Домножим на необходимый весовой коэффициент
-            acc_data *= acc_scaller.scale_rate;     // Домножим на необходимый масштабирующий коэффициент
+            acc_data *= AccCoeff;           // Домножим на необходимый весовой коэффициент
+            acc_data *= acc_scale_rate;     // Домножим на необходимый масштабирующий коэффициент
         }
         
     #ifdef USE_MAGNETIC_SENSOR

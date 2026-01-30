@@ -173,6 +173,8 @@ int main()
 // Инициализация оборудования
 void InitAll(){
     leds.Init();
+    leds.LedsOn();
+
     gyro_sensor.Init();
     acc_sensor.Init();
     // com_port.Init();
