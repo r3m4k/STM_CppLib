@@ -175,7 +175,7 @@ void InitAll(){
     leds.Init();
     gyro_sensor.Init();
     acc_sensor.Init();
-    com_port.Init();
+    // com_port.Init();
     usart1.Init();
     Pin_PC0.InitPin();
     Pin_PC1.InitPinExti();
@@ -208,9 +208,9 @@ void send_package(){
     gyronavt_package.UpdateControlSum();
 
     // Отправим посылку по com порту и usart1
-    leds.LedOn(LED4);
-    com_port.SendPackage(gyronavt_package);
-    leds.LedOff(LED4);
+    // leds.LedOn(LED4);
+    // com_port.SendPackage(gyronavt_package);
+    // leds.LedOff(LED4);
 
     leds.LedOn(LED5);
     usart1.SendPackage(gyronavt_package);

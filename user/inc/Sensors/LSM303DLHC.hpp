@@ -7,6 +7,7 @@
 #include "stm32f30x.h"
 #include "stm32f3_discovery_lsm303dlhc.h"
 #include "TriaxialData.hpp"
+#include "SensorScaler.hpp"
 
 /* Defines -------------------------------------------------------------------*/
 #define USE_MAGNETIC_SENSOR
@@ -15,6 +16,8 @@
 #define AccCoeff        0.01    // Коэффициент перевода из исходной системы измерения ускорения 
 #define MagCoeff        10^5    // Коэффициент перевода из Гауссов в нТ
 
+#define TrueMoscowAcc   9.8155f // Точное значение ускорения свободного падения в Москве
+
 // -----------------------------------------------------------------------------
 
 namespace STM_CppLib{
@@ -22,7 +25,6 @@ namespace STM_CppLib{
     // -------------------------------------------------------------------------
     // Класс для работы с LSM303DLHC, совмещающий в себе акселерометр, магнетометр и температурный датчик 
     class LSM303DLHC{
-        float LSM_Acc_Sensitivity;
 
     public:
         /* --------------------------------------------
@@ -42,17 +44,25 @@ namespace STM_CppLib{
         float temperature;
     #endif /*    USE_TEMPERATURE_SENSOR   */
 
-        // ------------------------------
-        // Инициализация датчиков
-        // ------------------------------
+    private:
+        float LSM_Acc_Sensitivity;
+        SensorScaller<LSM303DLHC> acc_scaller{this, &acc_data, TrueMoscowAcc};
 
+        // ---------------------------------------------------------------------
+        // Методы класса
+        // ---------------------------------------------------------------------
+
+    public:
+        // Инициализация датчиков
         void Init(){
             AccInit();
-    #ifdef USE_MAGNETIC_SENSOR
             MagInit();
-    #endif /*   USE_MAGNETIC_SENSOR   */
-        }
 
+            acc_scaller.Init();
+        }
+    
+    private:
+        // Инициализация акселерометра
         void AccInit(){
             LSM303DLHCAcc_InitTypeDef AInitStruct;
             LSM303DLHCAcc_FilterConfigTypeDef FInitStructure;
@@ -81,6 +91,7 @@ namespace STM_CppLib{
             LSM303DLHC_AccFilterConfig(&FInitStructure);
         }
 
+        // Инициализация магнитометра
         void MagInit(){
             LSM303DLHCMag_InitTypeDef InitStruct;
 
@@ -88,11 +99,8 @@ namespace STM_CppLib{
             InitStruct.MagOutput_DataRate = LSM303DLHC_ODR_220_HZ;          /*!< Output Data Rate = 220 Hz */
             InitStruct.Working_Mode = LSM303DLHC_CONTINUOS_CONVERSION;      /*!< Continuous-Conversion Mode */
 
-    #ifdef USE_TEMPERATURE_SENSOR
             InitStruct.Temperature_Sensor = LSM303DLHC_TEMPSENSOR_ENABLE;   /*!< Temp sensor Enable */
-    #else
             InitStruct.Temperature_Sensor = LSM303DLHC_TEMPSENSOR_DISABLE;  /*!< Temp sensor Disable */
-    #endif
 
             LSM303DLHC_MagInit(&InitStruct);
         }
@@ -100,7 +108,7 @@ namespace STM_CppLib{
         // ------------------------------
         // Чтение данных датчиков
         // ------------------------------
-
+    public:
         void ReadData(){
             ReadAcc();
             
@@ -113,6 +121,7 @@ namespace STM_CppLib{
     #endif /*   USE_TEMPERATURE_SENSOR   */
         }
 
+    private:
         void ReadAcc(){
             int16_t pnRawData[3];
             uint8_t ctrlx[2];
@@ -184,9 +193,11 @@ namespace STM_CppLib{
             acc_data.y_coord = -static_cast<float>(pnRawData[0]) / LSM_Acc_Sensitivity;
             acc_data.z_coord =  static_cast<float>(pnRawData[2]) / LSM_Acc_Sensitivity;
 
-            acc_data *= AccCoeff;   // Домножим на необходимый весовой коэффициент
+            acc_data *= AccCoeff;                   // Домножим на необходимый весовой коэффициент
+            acc_data *= acc_scaller.scale_rate;     // Домножим на необходимый масштабирующий коэффициент
         }
-
+        
+    #ifdef USE_MAGNETIC_SENSOR
         void ReadMag(){
             uint8_t CTRLB = 0;
             uint16_t Magn_Sensitivity_XY, Magn_Sensitivity_Z;
@@ -245,6 +256,7 @@ namespace STM_CppLib{
 
             mag_data *= MagCoeff;   // Домножим на необходимый весовой коэффициент
         }
+    #endif /*   USE_MAGNETIC_SENSOR   */
 
     #ifdef USE_TEMPERATURE_SENSOR
         void ReadTemp(){

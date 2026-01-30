@@ -22,7 +22,6 @@ namespace STM_CppLib{
     // -------------------------------------------------------------------------
     // Класс для работы с гироскопом L3GD20
     class L3GD20{
-        float gyro_multiplier;
 
     public:
 
@@ -34,6 +33,14 @@ namespace STM_CppLib{
         * ------------------------------------------ */
         TriaxialData gyro_data;     // [градус/сек]
 
+    private:
+        float gyro_multiplier;
+
+        // ---------------------------------------------------------------------
+        // Методы класса
+        // ---------------------------------------------------------------------
+
+    public:
         void Init(){
             L3GD20_InitTypeDef InitStruct;
             L3GD20_FilterConfigTypeDef FilterStruct;
