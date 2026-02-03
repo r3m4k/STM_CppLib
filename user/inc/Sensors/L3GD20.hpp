@@ -10,8 +10,6 @@
 
 /* Defines -------------------------------------------------------------------*/
 
-#define GyroCoeff   0.001   // Коэффициент перевода из mgps в gps (градус/сек)
-
 // -----------------------------------------------------------------------------
 namespace STM_CppLib{
 
@@ -30,7 +28,7 @@ namespace STM_CppLib{
         TriaxialData gyro_data;     // [градус/сек]
 
     private:
-        float gyro_multiplier;
+        float gyro_multiplier;      // [dps/digit]
 
         // ---------------------------------------------------------------------
         // Методы класса
@@ -62,15 +60,15 @@ namespace STM_CppLib{
             switch (InitStruct.Full_Scale)
             {
             case L3GD20_FULLSCALE_250:
-                gyro_multiplier = 8.75;
+                gyro_multiplier = 8.75 / 1000;      // [mdps/digit] -> [dps/digit]
                 break;
 
             case L3GD20_FULLSCALE_500:
-                gyro_multiplier = 17.5;
+                gyro_multiplier = 17.5 / 1000;      // [mdps/digit] -> [dps/digit]
                 break;    
 
             case L3GD20_FULLSCALE_2000:
-                gyro_multiplier = 70.0;
+                gyro_multiplier = 70.0 / 1000;      // [mdps/digit] -> [dps/digit]
                 break; 
             }
         }
@@ -82,19 +80,18 @@ namespace STM_CppLib{
             // x_coord
             L3GD20_Read(&high_bit, L3GD20_OUT_X_H_ADDR, 1);
             L3GD20_Read(&low_bit,  L3GD20_OUT_X_L_ADDR, 1);
-            gyro_data.x_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / gyro_multiplier;
+            gyro_data.x_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) * gyro_multiplier;
             
             // y_coord
             L3GD20_Read(&high_bit, L3GD20_OUT_Y_H_ADDR, 1);
             L3GD20_Read(&low_bit,  L3GD20_OUT_Y_L_ADDR, 1);
-            gyro_data.y_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / gyro_multiplier;
+            gyro_data.y_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) * gyro_multiplier;
             
             // z_coord
             L3GD20_Read(&high_bit, L3GD20_OUT_Z_H_ADDR, 1);
             L3GD20_Read(&low_bit,  L3GD20_OUT_Z_L_ADDR, 1);
-            gyro_data.z_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) / gyro_multiplier;
+            gyro_data.z_coord = static_cast<float>(static_cast<int16_t>(high_bit << 8) + low_bit) * gyro_multiplier;
 
-            gyro_data *= GyroCoeff;     // Домножим на необходимый весовой коэффициент
         }
     };
 

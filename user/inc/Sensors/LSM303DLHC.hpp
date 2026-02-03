@@ -10,18 +10,13 @@
 #include "SensorScaler.hpp"
 
 /* Defines -------------------------------------------------------------------*/
-#define LSM_Acc_Sensitivity_2g     (float)     1.0f            /*!< accelerometer sensitivity with 2 g full scale [LSB/mg] */
-#define LSM_Acc_Sensitivity_4g     (float)     0.5f            /*!< accelerometer sensitivity with 4 g full scale [LSB/mg] */
-#define LSM_Acc_Sensitivity_8g     (float)     0.25f           /*!< accelerometer sensitivity with 8 g full scale [LSB/mg] */
-#define LSM_Acc_Sensitivity_16g    (float)     0.0834f         /*!< accelerometer sensitivity with 12 g full scale [LSB/mg] */
-
 #define USE_MAGNETIC_SENSOR
 // #define USE_TEMPERATURE_SENSOR
 
-#define AccCoeff        0.01    // Коэффициент перевода из исходной системы измерения ускорения 
-#define MagCoeff        10^5    // Коэффициент перевода из Гауссов в нТ
+#define AccCoeff        0.01        // Коэффициент перевода ускорения               [mg] --> [g] 
+#define MagCoeff        100000      // Коэффициент перевода магнитной индукции      [G] --> [nT]
 
-#define TrueMoscowAcc   9.8155f // Точное значение ускорения свободного падения в Москве
+#define TrueMoscowAcc   9.8155f     // Точное значение ускорения свободного падения в Москве
 
 // -----------------------------------------------------------------------------
 
@@ -30,8 +25,6 @@ namespace STM_CppLib{
     // -------------------------------------------------------------------------
     // Класс для работы с LSM303DLHC, совмещающий в себе акселерометр, магнетометр и температурный датчик 
     class LSM303DLHC{
-
-    public:
         /* --------------------------------------------
         * В соответствии с документацией на LSM303DLHC:
         * OX =  oy
@@ -39,19 +32,24 @@ namespace STM_CppLib{
         * OZ =  oz
         * ------------------------------------------ */
 
+    public:
         TriaxialData acc_data;      // [м/с**2]
+    private:
+        float LSM_Acc_Sensitivity;      // Чувствительность акселерометра
+        float acc_scale_rate = 1.0f;    // Масштабирующий коэффициент
 
     #ifdef USE_MAGNETIC_SENSOR
+    public:
         TriaxialData mag_data;      // [нТ]
+    private:
+        float LSM_Mag_Sensitivity;      // Чувствительность магнитометра
+
     #endif /*   USE_MAGNETIC_SENSOR   */
 
     #ifdef USE_TEMPERATURE_SENSOR
         float temperature;
     #endif /*    USE_TEMPERATURE_SENSOR   */
 
-    private:
-        float LSM_Acc_Sensitivity;      // Чувствительность акселерометра
-        float acc_scale_rate = 1.0f;    // Масштабирующий коэффициент
 
         // ---------------------------------------------------------------------
         // Методы класса
@@ -79,6 +77,8 @@ namespace STM_CppLib{
             AInitStruct.Power_Mode = LSM303DLHC_NORMAL_MODE;                    // NORMAL or LOWPOWER MODE (CTRL_REG1 ODR[3])
             AInitStruct.AccOutput_DataRate = LSM303DLHC_ODR_400_HZ;             // output data rate				(CTRL_REG1) //400Hz - less zero values
             AInitStruct.Axes_Enable = LSM303DLHC_AXES_ENABLE;                   // enable x, y and z axes	(CTRL_REG1)
+
+            // TODO: поиграться с выбором шкалы акселерометра
             AInitStruct.AccFull_Scale = LSM303DLHC_FULLSCALE_16G;               // full scale (CTRL_REG4)
             AInitStruct.BlockData_Update = LSM303DLHC_BlockUpdate_Continous;    // Block data update. Default value: 0; (0: continuous update, 1: output registers not updated until MSB and LSB have been read (CTRL_REG4)
             AInitStruct.Endianness = LSM303DLHC_BLE_LSB;                        // Big/little endian data selection. Default value 0.(0: data LSB @ lower address, 1: data MSB @ lower address) AInitStruct.High_Resolution=LSM303DLHC_HR_ENABLE; (CTRL_REG4)
@@ -135,7 +135,6 @@ namespace STM_CppLib{
             uint8_t ctrlx[2];
             uint8_t buffer[6] = {0};
             uint8_t cDivider;
-            float LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_2g;
 
             /* Read the register content */
             LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_CTRL_REG4_A, ctrlx, 2);
@@ -148,6 +147,7 @@ namespace STM_CppLib{
             LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Z_L_A, buffer + 4, 1);
             LSM303DLHC_Read(ACC_I2C_ADDRESS, LSM303DLHC_OUT_Z_H_A, buffer + 5, 1);
 
+            // TODO: а нужно ли постоянно проверять значение этого регистра?
             if (ctrlx[1] & 0x40)
                 cDivider = 64;
             else
@@ -181,16 +181,16 @@ namespace STM_CppLib{
                 switch (ctrlx[0] & 0x30)
                 {
                 case LSM303DLHC_FULLSCALE_2G:
-                    LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_2g;
+                    LSM_Acc_Sensitivity = LSM303DLHC_ACC_SENSITIVITY_2G;
                     break;
                 case LSM303DLHC_FULLSCALE_4G:
-                    LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_4g;
+                    LSM_Acc_Sensitivity = LSM303DLHC_ACC_SENSITIVITY_4G;
                     break;
                 case LSM303DLHC_FULLSCALE_8G:
-                    LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_8g;
+                    LSM_Acc_Sensitivity = LSM303DLHC_ACC_SENSITIVITY_8G;
                     break;
                 case LSM303DLHC_FULLSCALE_16G:
-                    LSM_Acc_Sensitivity = LSM_Acc_Sensitivity_16g;
+                    LSM_Acc_Sensitivity = LSM303DLHC_ACC_SENSITIVITY_16G;
                     break;
                 }
             }
