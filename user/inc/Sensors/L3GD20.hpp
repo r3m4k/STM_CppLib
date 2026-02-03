@@ -36,9 +36,13 @@ namespace STM_CppLib{
 
     public:
         void Init(){
+            // ----------------------------------------------------------------
+            // Структуры для конфигурации
             L3GD20_InitTypeDef InitStruct;
             L3GD20_FilterConfigTypeDef FilterStruct;
 
+            // ----------------------------------------------------------------
+            // Сконфигурируем параметры гироскопа
             InitStruct.Power_Mode = L3GD20_MODE_ACTIVE;                     /* Power-down/Sleep/Normal Mode */
             InitStruct.Output_DataRate = L3GD20_OUTPUT_DATARATE_2;          /* OUT data rate */
             InitStruct.Axes_Enable = L3GD20_AXES_ENABLE;                    /* Axes enable */
@@ -49,12 +53,14 @@ namespace STM_CppLib{
 
             L3GD20_Init(&InitStruct);
 
-            /* High Pass Filter Configuration Functions */
+            // ----------------------------------------------------------------
+            // Сконфигурируем параметры встроенного фильтра акселерометра
             FilterStruct.HighPassFilter_Mode_Selection = L3GD20_HPM_NORMAL_MODE; /* Internal filter mode */
             FilterStruct.HighPassFilter_CutOff_Frequency = L3GD20_HPFCF_5;       /* High pass filter cut-off frequency */
 
             L3GD20_FilterConfig(&FilterStruct);
 
+            // ----------------------------------------------------------------
             // Зададим множитель для гироскопа в соответствии с документацией
             // (см. документацию для L3GD20, таблица 3 "Mechanical characteristics", стр. 9)
             switch (InitStruct.Full_Scale)

@@ -258,7 +258,7 @@ extern "C"
  */
 
 /**
- * @defgroup Accelerometer_Sensitivity
+ * @defgroup Acc_Sensitivity
  * @{
  */
 #define LSM303DLHC_ACC_SENSITIVITY_2G     (float)     1.0f            /*!< accelerometer sensitivity with 2 g full scale [LSB/mg] */
