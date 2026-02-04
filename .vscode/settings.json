@@ -48,6 +48,7 @@
         "DLHC",
         "EXTI",
         "HCLK",
+        "KALMAN",
         "mdps",
         "NVIC",
         "Periph",

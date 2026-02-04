@@ -1,7 +1,3 @@
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __SENSOR_SCALLER_HPP
-#define __SENSOR_SCALLER_HPP
-
 /** ****************************************************************************
  * @file SensorScaller.hpp
  * @brief Шаблонный класс для адаптивного масштабирования данных трёхосевых 
@@ -13,6 +9,10 @@
  * @date Январь 2026
  * @author Романовский Роман
  **************************************************************************** */
+
+/* Define to prevent recursive inclusion -------------------------------------*/
+#ifndef __SENSOR_SCALLER_HPP
+#define __SENSOR_SCALLER_HPP
 
 /* Includes ------------------------------------------------------------------*/
 #include <concepts>
