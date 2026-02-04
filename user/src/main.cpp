@@ -12,6 +12,8 @@
 #include "USART.hpp"
 #include "GpioPort.hpp"
 #include "GpioPin.hpp"
+#include "SimpleKalman3dFilter.hpp"
+#include "SensorsKalmanParams.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -64,10 +66,9 @@ using namespace STM_CppLib;
 
 // Периферия
 Leds leds;                          // Светодиоды на плате
-L3GD20 gyro_sensor;                 // Встроенный гироскоп
-LSM303DLHC acc_sensor;              // Встроенный датчик с акселерометром,
+L3GD20 L3GD20_sensor;               // Встроенный гироскоп
+LSM303DLHC LSM303DLHC_sensor;       // Встроенный датчик с акселерометром,
                                     // магнитным и температурным датчиками
-STM_Packages::GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
 
 // Интерфейсы связи
 ComPort com_port;
@@ -90,6 +91,16 @@ STM_GPIO::GPIO_Pin_EXTI
     <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data> Pin_PC1;
 
 // ----------------------------------------------------------------------------
+
+// Делитель 50 подобран опытным путём
+SimpleKalman3dFilter acc_filter(LSM303DLHC_acc_variance / 50, LSM303DLHC_acc_variance);
+SimpleKalman3dFilter gyro_filter(L3GD20_gyro_variance   / 50, L3GD20_gyro_variance);
+SimpleKalman3dFilter mag_filter(LSM303DLHC_mag_variance / 50, LSM303DLHC_mag_variance);
+
+// Пакет данных в формате "Гиронавт"
+STM_Packages::GyronavtPackage gyronavt_package(
+    &acc_filter.filtered_value, &gyro_filter.filtered_value, &mag_filter.filtered_value
+);  
 
 uint32_t tick_counter = 0;      // Счётчик тиков основного таймера
 
@@ -130,8 +141,8 @@ int main()
     leds.ToggleLeds();
 
     // Считаем показания датчиков до запуска таймеров, чтобы не отправлять нулевые данные
-    gyro_sensor.ReadData();
-    acc_sensor.ReadData();
+    L3GD20_sensor.ReadData();
+    LSM303DLHC_sensor.ReadData();
     update_package_data();
     
     // Запустим таймеры
@@ -147,8 +158,13 @@ int main()
             leds.LedOn(LED9);
 
             // Считаем показания датчиков
-            gyro_sensor.ReadData();
-            acc_sensor.ReadData();
+            L3GD20_sensor.ReadData();
+            LSM303DLHC_sensor.ReadData();
+
+            // Отфильтруем показания с датчиков
+            acc_filter.append_value(LSM303DLHC_sensor.acc_data);
+            gyro_filter.append_value(L3GD20_sensor.gyro_data);
+            mag_filter.append_value(LSM303DLHC_sensor.mag_data);
             
             // Обновим данные gyronavt_package в прерывании EXTI_Line1 
 
@@ -175,8 +191,8 @@ void InitAll(){
     leds.Init();
     leds.LedsOn();
 
-    gyro_sensor.Init();
-    acc_sensor.Init();
+    L3GD20_sensor.Init();
+    LSM303DLHC_sensor.Init();
     // com_port.Init();
     usart1.Init();
     Pin_PC0.InitPin();

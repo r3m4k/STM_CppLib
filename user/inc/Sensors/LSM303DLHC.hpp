@@ -82,7 +82,7 @@ namespace STM_CppLib{
             AInitStruct.Power_Mode = LSM303DLHC_NORMAL_MODE;                    // NORMAL or LOWPOWER MODE (CTRL_REG1 ODR[3])
             AInitStruct.AccOutput_DataRate = LSM303DLHC_ODR_400_HZ;             // output data rate				(CTRL_REG1) //400Hz - less zero values
             AInitStruct.Axes_Enable = LSM303DLHC_AXES_ENABLE;                   // enable x, y and z axes	(CTRL_REG1)
-            AInitStruct.AccFull_Scale = LSM303DLHC_FULLSCALE_2G;                // full scale (CTRL_REG4)
+            AInitStruct.AccFull_Scale = LSM303DLHC_FULLSCALE_4G;                // full scale (CTRL_REG4)
             AInitStruct.BlockData_Update = LSM303DLHC_BlockUpdate_Continous;    // Block data update. Default value: 0; (0: continuous update, 1: output registers not updated until MSB and LSB have been read (CTRL_REG4)
             AInitStruct.Endianness = LSM303DLHC_BLE_LSB;                        // Little Endian: data LSB @ lower address
             AInitStruct.High_Resolution = LSM303DLHC_HR_ENABLE;                 // Acc high resolution enabled

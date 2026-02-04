@@ -7,9 +7,6 @@
 
 #include "BasePackage.hpp"
 #include "TriaxialData.hpp"
-#include "FloatBytes.hpp"
-#include "L3GD20.hpp"
-#include "LSM303DLHC.hpp"
 
 /* Defines -------------------------------------------------------------------*/
 #define Preamble            0xFB
@@ -20,8 +17,6 @@
 #define DefaultStatus       0x32
 
 /* Global variables ----------------------------------------------------------*/
-extern STM_CppLib::L3GD20       gyro_sensor;
-extern STM_CppLib::LSM303DLHC   acc_sensor;
 
 // -----------------------------------------------------------------------------
 
@@ -31,7 +26,11 @@ namespace STM_CppLib{
     // ------------------------------------    
     // Посылка, согласно протоколу Гиронавт
     class GyronavtPackage: public BasePackage{
-    
+    private:
+        TriaxialData* acc_data_ptr;
+        TriaxialData* gyro_data_ptr;
+        TriaxialData* mag_data_ptr;
+
         #pragma pack(1)
         struct package_body_t
         {
@@ -51,7 +50,9 @@ namespace STM_CppLib{
         );
 
     public:
-        GyronavtPackage(){
+        GyronavtPackage() = delete;
+        GyronavtPackage(TriaxialData* _acc_data_ptr, TriaxialData* _gyro_data_ptr, TriaxialData* _mag_data_ptr):
+            acc_data_ptr(_acc_data_ptr), gyro_data_ptr(_gyro_data_ptr), mag_data_ptr(_mag_data_ptr){
             // Последним байтом заголовка необходимо задать длину данных внутри посылки
             package_body.header[3] = 12;   // На стороне приёмника len = (bt & 0x7f) * 4;;
             
@@ -60,9 +61,9 @@ namespace STM_CppLib{
         }
 
         void UpdateData() {
-            package_body.acc_data = acc_sensor.acc_data;
-            package_body.gyro_data = gyro_sensor.gyro_data;
-            package_body.mag_data = acc_sensor.mag_data;
+            package_body.acc_data = *acc_data_ptr;
+            package_body.gyro_data = *gyro_data_ptr;
+            package_body.mag_data = *mag_data_ptr;
         }
 
         void UpdateTime(uint32_t new_time){

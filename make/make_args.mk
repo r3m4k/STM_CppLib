@@ -69,6 +69,7 @@ INCLUDES = \
 -I"${SOURCE_DIR}/user/inc" \
 -I"${SOURCE_DIR}/user/inc/Common" \
 -I"${SOURCE_DIR}/user/inc/CommunicationInterfaces" \
+-I"${SOURCE_DIR}/user/inc/Filters" \
 -I"${SOURCE_DIR}/user/inc/Packages" \
 -I"${SOURCE_DIR}/user/inc/Periph" \
 -I"${SOURCE_DIR}/user/inc/Sensors" \

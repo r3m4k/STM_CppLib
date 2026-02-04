@@ -50,7 +50,7 @@ private:
     TriaxialData K;         /**< Коэффициент Калмана (Kalman gain)          */    
     TriaxialData P;         /**< Апостериорная ковариация ошибки оценки     */
 public:
-    TriaxialData estimate_value;   /**< Текущая оценка состояния            */
+    TriaxialData filtered_value;   /**< Текущая оценка состояния            */
 
 public:
     /**
@@ -73,19 +73,19 @@ public:
     SimpleKalman3dFilter(
         TriaxialData _Q = TriaxialData(0.0001, 0.0001, 0.0001), 
         TriaxialData _R = TriaxialData(0.005, 0.005, 0.005)
-    ): Q(_Q), R(_R), K(), P(), estimate_value() {}
+    ): Q(_Q), R(_R), K(), P(), filtered_value() {}
     
     /**
      * @brief Добавить новое измерение и выполнить фильтрацию
      * @param input_value Новое измерение от датчика
      */
     void append_value(const TriaxialData& input_value) {
-        TriaxialData pred_value = estimate_value;
+        TriaxialData pred_value = filtered_value;
         TriaxialData P_pred = P + Q;
 
         K = P_pred / (P_pred + R);
-        estimate_value = pred_value + K * (input_value - pred_value);
-        P = (1 - K) * P_pred;
+        filtered_value = pred_value + K * (input_value - pred_value);
+        P = (TriaxialData(1, 1, 1) - K) * P_pred;
     }
 };
 

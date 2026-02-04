@@ -61,6 +61,9 @@ public:
         return TriaxialData(x_coord / scalar, y_coord / scalar, z_coord / scalar);
     }
 
+    TriaxialData operator/(const TriaxialData& other) const {
+        return TriaxialData(x_coord / other.x_coord, y_coord / other.y_coord, z_coord / other.z_coord);
+    }
     // 2. Составные присваивания
     TriaxialData& operator+=(const TriaxialData& other) {
         x_coord += other.x_coord;
