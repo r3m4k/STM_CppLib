@@ -12,6 +12,8 @@
 #include "USART.hpp"
 #include "GpioPort.hpp"
 #include "GpioPin.hpp"
+#include "SimpleKalman3dFilter.hpp"
+#include "SensorsKalmanParams.hpp"
 
 // ----------------------------------------------------------------------------
 //
@@ -41,6 +43,8 @@ __IO uint8_t buttonState;
 
 /* Defines ------------------------------------------------------------------*/
 #define IST_VECTORS_NUM     98
+#define MODE    RELEASE
+// #define MODE    CALIBRATION
 
 /* Typedef ------------------------------------------------------------------*/
 typedef void (* const pHandler)(void);
@@ -58,38 +62,47 @@ __user_pHandler __user_vector_table[IST_VECTORS_NUM] = {0};
 // Стадии программы
 enum class ProgramStages{InfiniteSending};
 
-// ----------------------------------------------------------------------------
-
-using namespace STM_CppLib;
-
 // Периферия
-Leds leds;                          // Светодиоды на плате
-L3GD20 gyro_sensor;                 // Встроенный гироскоп
-LSM303DLHC acc_sensor;              // Встроенный датчик с акселерометром,
-                                    // магнитным и температурным датчиками
-STM_Packages::GyronavtPackage gyronavt_package;   // Пакет данных в формате "Гиронавт"
+STM_CppLib::Leds leds;                          // Светодиоды на плате
+STM_CppLib::L3GD20 L3GD20_sensor;               // Встроенный гироскоп
+STM_CppLib::LSM303DLHC LSM303DLHC_sensor;       // Встроенный датчик с акселерометром,
+                                                // магнитным и температурным датчиками
 
 // Интерфейсы связи
-ComPort com_port;
-USARTx usart1;
+STM_CppLib::ComPort com_port;
+STM_CppLib::USARTx usart1;
 
 // Используемые таймеры
-STM_Timer::Timer3<send_package> timer3;   // Основной таймер, запускающий чтение и отправку данных 
-STM_Timer::Timer4<[](){
+STM_CppLib::STM_Timer::Timer3<send_package> timer3;   // Основной таймер, запускающий чтение и отправку данных 
+STM_CppLib::STM_Timer::Timer4<[](){
     leds.ChangeLedStatus(LED6);
     leds.ChangeLedStatus(LED7);
 }> timer4;   // Таймер для мерцания светодиодами LED6, LED7
 
-// Пин Pin_PC0 используется для инициализации прерывания EXTI_Line1, настроенное
-// на перевод пина Pin_PC1 из состояние Reset в состояние Set.
-// ВАЖНО! Данные пины должны быть соединены перемычкой на плате. 
-STM_GPIO::GPIO_Pin <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource0> Pin_PC0;
-
-// Настройка внешнего прерывания, которое будет вызываться из main
-STM_GPIO::GPIO_Pin_EXTI
-    <STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data> Pin_PC1;
+// Настройка внешнего прерывания на PC1, которое будет программно инициироваться
+STM_CppLib::STM_GPIO::GPIO_Pin_EXTI
+    <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data> Pin_PC1;
 
 // ----------------------------------------------------------------------------
+
+// Делитель 50 подобран опытным путём
+SimpleKalman3dFilter acc_filter(LSM303DLHC_acc_variance / 50, LSM303DLHC_acc_variance);
+SimpleKalman3dFilter gyro_filter(L3GD20_gyro_variance   / 50, L3GD20_gyro_variance);
+SimpleKalman3dFilter mag_filter(LSM303DLHC_mag_variance / 50, LSM303DLHC_mag_variance);
+
+// Пакет данных в формате "Гиронавт"
+
+#if MODE == RELEASE
+    STM_CppLib::STM_Packages::GyronavtPackage gyronavt_package(
+        &acc_filter.filtered_value, &gyro_filter.filtered_value, &mag_filter.filtered_value
+    ); 
+    
+#elif MODE == CALIBRATION
+    STM_CppLib::STM_Packages::GyronavtPackage gyronavt_package(
+        &LSM303DLHC_sensor.acc_data, &L3GD20_sensor.gyro_data, &LSM303DLHC_sensor.mag_data
+    ); 
+#endif
+
 
 uint32_t tick_counter = 0;      // Счётчик тиков основного таймера
 
@@ -130,8 +143,8 @@ int main()
     leds.ToggleLeds();
 
     // Считаем показания датчиков до запуска таймеров, чтобы не отправлять нулевые данные
-    gyro_sensor.ReadData();
-    acc_sensor.ReadData();
+    L3GD20_sensor.ReadData();
+    LSM303DLHC_sensor.ReadData();
     update_package_data();
     
     // Запустим таймеры
@@ -147,20 +160,18 @@ int main()
             leds.LedOn(LED9);
 
             // Считаем показания датчиков
-            gyro_sensor.ReadData();
-            acc_sensor.ReadData();
+            L3GD20_sensor.ReadData();
+            LSM303DLHC_sensor.ReadData();
+
+            // Отфильтруем показания с датчиков
+            acc_filter.append_value(LSM303DLHC_sensor.acc_data);
+            gyro_filter.append_value(L3GD20_sensor.gyro_data);
+            mag_filter.append_value(LSM303DLHC_sensor.mag_data);
             
             // Обновим данные gyronavt_package в прерывании EXTI_Line1 
 
             /* Программная инициализация прерывания */
             EXTI_GenerateSWInterrupt(EXTI_Line1);
-
-            /* ***************************
-            Инициализация прерывания через поднятие ножки PC0.
-            Для этого необходимо соединить ножки PC0 и PC1 с помощью джампера!
-            *************************** */
-            // Pin_PC0.SetPin();
-            // Pin_PC0.ResetPin();
             
             leds.LedOff(LED9);
 
@@ -173,11 +184,12 @@ int main()
 // Инициализация оборудования
 void InitAll(){
     leds.Init();
-    gyro_sensor.Init();
-    acc_sensor.Init();
-    com_port.Init();
+    leds.LedsOn();
+
+    L3GD20_sensor.Init();
+    LSM303DLHC_sensor.Init();
+    // com_port.Init();
     usart1.Init();
-    Pin_PC0.InitPin();
     Pin_PC1.InitPinExti();
 
     // Настройка таймера для начала сбора данных
@@ -208,13 +220,13 @@ void send_package(){
     gyronavt_package.UpdateControlSum();
 
     // Отправим посылку по com порту и usart1
-    leds.LedOn(LED4);
-    com_port.SendPackage(gyronavt_package);
-    leds.LedOff(LED4);
+    // leds.LedOn(LED4);
+    // com_port.SendPackage(gyronavt_package);
+    // leds.LedOff(LED4);
 
-    leds.LedOn(LED5);
+    // leds.LedOn(LED5);
     usart1.SendPackage(gyronavt_package);
-    leds.LedOff(LED5);
+    // leds.LedOff(LED5);
 }
 
 // -------------------------------------------------------------------------------
