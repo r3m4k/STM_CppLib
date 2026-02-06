@@ -72,14 +72,7 @@ STM_CppLib::LSM303DLHC LSM303DLHC_sensor;       // Встроенный датч
 STM_CppLib::ComPort com_port;
 STM_CppLib::USARTx usart1;
 
-// Используемые таймеры
-STM_CppLib::STM_Timer::Timer3<send_package> timer3;   // Основной таймер, запускающий чтение и отправку данных 
-STM_CppLib::STM_Timer::Timer4<[](){
-    leds.ChangeLedStatus(LED6);
-    leds.ChangeLedStatus(LED7);
-}> timer4;   // Таймер для мерцания светодиодами LED6, LED7
-
-// Настройка внешнего прерывания на PC1, которое будет программно инициироваться
+// Настройка EXTI на PC1, которое будет программно инициироваться
 STM_CppLib::STM_GPIO::GPIO_Pin_EXTI
     <STM_CppLib::STM_GPIO::GPIO_Port::PortC, GPIO_PinSource1, update_package_data> Pin_PC1;
 
@@ -103,8 +96,48 @@ SimpleKalman3dFilter mag_filter(LSM303DLHC_mag_variance / 50, LSM303DLHC_mag_var
     ); 
 #endif
 
+// ----------------------------------------------------------------------------
 
-uint32_t tick_counter = 0;      // Счётчик тиков основного таймера
+uint32_t tick_counter = 0;              // Счётчик отправленных посылок
+uint8_t sensor_reading_counter = 0;     // Счётчик, необходимый для снижения частоты
+                                        // опроса магнитного датчика в 2 раза
+
+// ----------------------------------------------------------------------------
+
+// Используемые таймеры
+STM_CppLib::STM_Timer::Timer2<[](){
+
+    /* Объявление лямбды, которая будет вызываться в прерывании */
+    leds.LedOn(LED9);
+
+    // Считаем данные с датчиков
+    L3GD20_sensor.ReadGyro();
+    LSM303DLHC_sensor.ReadAcc();
+    
+    if (sensor_reading_counter++ % 2 == 0) {
+        LSM303DLHC_sensor.ReadMag();
+    }
+    // Отфильтруем показания с датчиков
+    acc_filter.append_value(LSM303DLHC_sensor.acc_data);
+    gyro_filter.append_value(L3GD20_sensor.gyro_data);
+    mag_filter.append_value(LSM303DLHC_sensor.mag_data);
+
+    // Обновим данные gyronavt_package в прерывании EXTI_Line1 с более высоким приоритетом
+    EXTI_GenerateSWInterrupt(EXTI_Line1);
+
+    leds.LedOff(LED9);
+}>  timer2;     // Таймер, по которому будут считываться данные с датчиков
+                // ВАЖНО: Для него необходимо задать более низкий приоритет
+                // прерывания, тк чтение данных с датчиков долгая процедура!
+
+STM_CppLib::STM_Timer::Timer3<send_package>
+    timer3;     // Основной таймер, запускающий чтение и отправку данных 
+
+STM_CppLib::STM_Timer::Timer4<[](){
+    leds.ChangeLedStatus(LED6);
+    leds.ChangeLedStatus(LED7);
+}>  timer4;     // Таймер для мерцания светодиодами LED6, LED7
+
 
 // ----------------------------------------------------------------------------
 
@@ -148,35 +181,14 @@ int main()
     update_package_data();
     
     // Запустим таймеры
+    timer2.Start();
     timer3.Start();
     timer4.Start();
 
     // Основной цикл программы
     while (true)
     {
-        switch (stage){
-        case ProgramStages::InfiniteSending:
-
-            leds.LedOn(LED9);
-
-            // Считаем показания датчиков
-            L3GD20_sensor.ReadData();
-            LSM303DLHC_sensor.ReadData();
-
-            // Отфильтруем показания с датчиков
-            acc_filter.append_value(LSM303DLHC_sensor.acc_data);
-            gyro_filter.append_value(L3GD20_sensor.gyro_data);
-            mag_filter.append_value(LSM303DLHC_sensor.mag_data);
-            
-            // Обновим данные gyronavt_package в прерывании EXTI_Line1 
-
-            /* Программная инициализация прерывания */
-            EXTI_GenerateSWInterrupt(EXTI_Line1);
-            
-            leds.LedOff(LED9);
-
-            break;
-        }
+        __NOP();    // Вызов "пустой" функции для ограничения оптимизации компилятора
     }
 }
 
@@ -188,16 +200,19 @@ void InitAll(){
 
     L3GD20_sensor.Init();
     LSM303DLHC_sensor.Init();
-    // com_port.Init();
-    usart1.Init();
     Pin_PC1.InitPinExti();
+    usart1.Init();
 
     // Настройка таймера для начала сбора данных
-    uint32_t tim3_period = 25 - 1;      // те на 25 тик таймер переполнится и вызовется прерывание
+    uint32_t tim2_period = 25 - 1;
+    timer2.Init(tim2_period, Prescaller_10kHz, nullptr, 2, 0);
+
+    // Настройка таймера для отправки данных
+    uint32_t tim3_period = 25 - 1;
     timer3.Init(tim3_period);
 
     // Настройка таймера для мерцания светодиодами
-    uint32_t tim4_period = 20000 - 1;   // срабатывание каждые 2 с
+    uint32_t tim4_period = 20000 - 1;
     timer4.Init(tim4_period);
 }
 
@@ -219,14 +234,8 @@ void send_package(){
     gyronavt_package.UpdateTime(++tick_counter);
     gyronavt_package.UpdateControlSum();
 
-    // Отправим посылку по com порту и usart1
-    // leds.LedOn(LED4);
-    // com_port.SendPackage(gyronavt_package);
-    // leds.LedOff(LED4);
-
-    // leds.LedOn(LED5);
+    // Отправим посылку по usart1
     usart1.SendPackage(gyronavt_package);
-    // leds.LedOff(LED5);
 }
 
 // -------------------------------------------------------------------------------
