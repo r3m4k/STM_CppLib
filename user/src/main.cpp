@@ -43,8 +43,8 @@ __IO uint8_t buttonState;
 
 /* Defines ------------------------------------------------------------------*/
 #define IST_VECTORS_NUM     98
-#define MODE    RELEASE
-// #define MODE    CALIBRATION
+#define PACKAGE_MODE    RELEASE
+// #define PACKAGE_MODE    CALIBRATION
 
 /* Typedef ------------------------------------------------------------------*/
 typedef void (* const pHandler)(void);
@@ -84,13 +84,12 @@ SimpleKalman3dFilter gyro_filter(L3GD20_gyro_variance   / 50, L3GD20_gyro_varian
 SimpleKalman3dFilter mag_filter(LSM303DLHC_mag_variance / 50, LSM303DLHC_mag_variance);
 
 // Пакет данных в формате "Гиронавт"
-
-#if MODE == RELEASE
+#if PACKAGE_MODE == RELEASE
     STM_CppLib::STM_Packages::GyronavtPackage gyronavt_package(
         &acc_filter.filtered_value, &gyro_filter.filtered_value, &mag_filter.filtered_value
     ); 
     
-#elif MODE == CALIBRATION
+#elif PACKAGE_MODE == CALIBRATION
     STM_CppLib::STM_Packages::GyronavtPackage gyronavt_package(
         &LSM303DLHC_sensor.acc_data, &L3GD20_sensor.gyro_data, &LSM303DLHC_sensor.mag_data
     ); 
@@ -106,7 +105,6 @@ uint8_t sensor_reading_counter = 0;     // Счётчик, необходимы�
 
 // Используемые таймеры
 STM_CppLib::STM_Timer::Timer2<[](){
-
     /* Объявление лямбды, которая будет вызываться в прерывании */
     leds.LedOn(LED9);
 
@@ -131,9 +129,10 @@ STM_CppLib::STM_Timer::Timer2<[](){
                 // прерывания, тк чтение данных с датчиков долгая процедура!
 
 STM_CppLib::STM_Timer::Timer3<send_package>
-    timer3;     // Основной таймер, запускающий чтение и отправку данных 
+    timer3;     // Основной таймер, запускающий отправку данных 
 
 STM_CppLib::STM_Timer::Timer4<[](){
+    /* Объявление лямбды, которая будет вызываться в прерывании */
     leds.ChangeLedStatus(LED6);
     leds.ChangeLedStatus(LED7);
 }>  timer4;     // Таймер для мерцания светодиодами LED6, LED7
@@ -188,7 +187,20 @@ int main()
     // Основной цикл программы
     while (true)
     {
-        __NOP();    // Вызов "пустой" функции для ограничения оптимизации компилятора
+        /* *********************************************
+        * Место для дальнейшего размещения кода проверки 
+        * очереди поступивших команд и рассчётов текущей
+        * координаты по данным с датчиков.
+        ********************************************* */
+       
+        switch (stage)
+        {
+        case ProgramStages::InfiniteSending:
+            // Вызов "пустой" функции для ограничения оптимизации компилятора
+            __NOP();    
+
+            break;
+        }
     }
 }
 
