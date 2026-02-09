@@ -64,7 +64,8 @@ namespace STM_CppLib{
                 uint32_t tim_period = 1000,                             // Количество тиков таймера для генерации прерывания
                 uint16_t prescaller = Prescaller_10kHz,                 // Делитель частоты шины 
                 TimerConfig* timer_config_ptr = nullptr,                // Указатель на конфигурацию таймера 
-                NVIC_InitTypeDef* NVIC_InitStructure_ptr = nullptr      // Указатель на структуру инициализации прерывания 
+                uint8_t NVIC_IRQChannelPreemptionPriority = DefaultIRQChannelPreemptionPriority,    // Приоритет прерывания
+                uint8_t NVIC_IRQChannelSubPriority = DefaultIRQChannelSubPriority                   // Подприоритет прерывания
             ){
                 /* *************************************************************************
                 *  Данный метод позволяет гибко настроить таймер для работы и отработки прерываний.
@@ -84,8 +85,16 @@ namespace STM_CppLib{
                     this->InitBaseTimer(&timer_config);
                 }
                 else{   this->InitBaseTimer(timer_config_ptr);   }
+                
+                // Настройка прерывания
+                NVIC_InitTypeDef NVIC_InitStructure;
+                
+                NVIC_InitStructure.NVIC_IRQChannel = TimerDescriptor<timer_type>::IRQn;
+                NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_IRQChannelPreemptionPriority;
+                NVIC_InitStructure.NVIC_IRQChannelSubPriority = NVIC_IRQChannelSubPriority;
+                NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 
-                this->InitInterrupt(NVIC_InitStructure_ptr);
+                this->InitInterrupt(&NVIC_InitStructure);
             }
 
             void irq_handler(){

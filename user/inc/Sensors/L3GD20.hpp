@@ -90,7 +90,12 @@ namespace STM_CppLib{
             gyro_scale_rate = gyro_scaller.scale_rate;
         }
 
+        // Метод необходим для использования L3GD20 в качестве шаблонного параметра
         void ReadData(){
+            ReadGyro();
+        }
+
+        void ReadGyro(){
             uint8_t high_bit = 0;
             uint8_t low_bit = 0;
             

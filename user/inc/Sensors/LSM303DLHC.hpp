@@ -69,7 +69,6 @@ namespace STM_CppLib{
             acc_scale_rate = acc_scaller.scale_rate;
         }
     
-    private:
         // Инициализация акселерометра
         void AccInit(){
             // ----------------------------------------------------------------
@@ -199,6 +198,8 @@ namespace STM_CppLib{
         // Чтение данных датчиков
         // ------------------------------
     public:
+
+        // Метод необходим для использования LSM303DLHC в качестве шаблонного параметра
         void ReadData(){
             ReadAcc();
             
@@ -211,7 +212,6 @@ namespace STM_CppLib{
     #endif /*   USE_TEMPERATURE_SENSOR   */
         }
 
-    private:
         void ReadAcc(){
             int16_t pnRawData[3];
             uint8_t buffer[6] = {0};
