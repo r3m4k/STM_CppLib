@@ -8,6 +8,7 @@
 #include "L3GD20.hpp"
 #include "LSM303DLHC.hpp"
 #include "GyronavtPackage.hpp"
+#include "CommandProcessing.hpp"
 #include "ComPort.hpp"
 #include "USART.hpp"
 #include "GpioPort.hpp"
@@ -67,6 +68,9 @@ STM_CppLib::Leds leds;                          // Светодиоды на п�
 STM_CppLib::L3GD20 L3GD20_sensor;               // Встроенный гироскоп
 STM_CppLib::LSM303DLHC LSM303DLHC_sensor;       // Встроенный датчик с акселерометром,
                                                 // магнитным и температурным датчиками
+
+// Обработчик поступивших команд
+STM_CppLib::Commands::CommandManager command_manager;
 
 // Интерфейсы связи
 STM_CppLib::ComPort com_port;
@@ -193,6 +197,11 @@ int main()
         * координаты по данным с датчиков.
         ********************************************* */
        
+        if (!command_manager.command_queue.is_empty()){
+            auto command = command_manager.command_queue.get();
+            command.execute();
+        }
+
         switch (stage)
         {
         case ProgramStages::InfiniteSending:
@@ -248,6 +257,13 @@ void send_package(){
 
     // Отправим посылку по usart1
     usart1.SendPackage(gyronavt_package);
+}
+
+// -------------------------------------------------------------------------------
+// Функции для обработки поступивших команд
+
+void restart(){
+    NVIC_SystemReset();
 }
 
 // -------------------------------------------------------------------------------
