@@ -64,13 +64,13 @@ __user_pHandler __user_vector_table[IST_VECTORS_NUM] = {0};
 enum class ProgramStages{InfiniteSending};
 
 // Периферия
-STM_CppLib::Leds leds;                          // Светодиоды на плате
-STM_CppLib::L3GD20 L3GD20_sensor;               // Встроенный гироскоп
-STM_CppLib::LSM303DLHC LSM303DLHC_sensor;       // Встроенный датчик с акселерометром,
+STM_CppLib::Leds        leds;                   // Светодиоды на плате
+STM_CppLib::L3GD20      sensor_L3GD20;          // Встроенный гироскоп
+STM_CppLib::LSM303DLHC  sensor_LSM303DLHC;      // Встроенный датчик с акселерометром,
                                                 // магнитным и температурным датчиками
 
 // Обработчик поступивших команд
-STM_CppLib::Commands::CommandManager command_manager;
+// STM_CppLib::Commands::CommandManager command_manager;
 
 // Интерфейсы связи
 STM_CppLib::ComPort com_port;
@@ -95,7 +95,7 @@ SimpleKalman3dFilter mag_filter(LSM303DLHC_mag_variance / 50, LSM303DLHC_mag_var
     
 #elif PACKAGE_MODE == CALIBRATION
     STM_CppLib::STM_Packages::GyronavtPackage gyronavt_package(
-        &LSM303DLHC_sensor.acc_data, &L3GD20_sensor.gyro_data, &LSM303DLHC_sensor.mag_data
+        &sensor_LSM303DLHC.acc_data, &sensor_L3GD20.gyro_data, &sensor_LSM303DLHC.mag_data
     ); 
 #endif
 
@@ -112,17 +112,17 @@ STM_CppLib::STM_Timer::Timer2<[](){
     /* Объявление лямбды, которая будет вызываться в прерывании */
     leds.LedOn(LED9);
 
-    // Считаем данные с датчиков
-    L3GD20_sensor.ReadGyro();
-    LSM303DLHC_sensor.ReadAcc();
+    // Считаем данные с датчиков и отфильтруем их
+    sensor_L3GD20.ReadGyro();
+    acc_filter.append_value(sensor_LSM303DLHC.acc_data);
+
+    sensor_LSM303DLHC.ReadAcc();
+    gyro_filter.append_value(sensor_L3GD20.gyro_data);
     
     if (sensor_reading_counter++ % 2 == 0) {
-        LSM303DLHC_sensor.ReadMag();
+        sensor_LSM303DLHC.ReadMag();
+        mag_filter.append_value(sensor_LSM303DLHC.mag_data);
     }
-    // Отфильтруем показания с датчиков
-    acc_filter.append_value(LSM303DLHC_sensor.acc_data);
-    gyro_filter.append_value(L3GD20_sensor.gyro_data);
-    mag_filter.append_value(LSM303DLHC_sensor.mag_data);
 
     // Обновим данные gyronavt_package в прерывании EXTI_Line1 с более высоким приоритетом
     EXTI_GenerateSWInterrupt(EXTI_Line1);
@@ -178,10 +178,16 @@ int main()
     // Поморгаем светодиодами после успешной инициализации
     leds.ToggleLeds();
 
-    // Считаем показания датчиков до запуска таймеров, чтобы не отправлять нулевые данные
-    L3GD20_sensor.ReadData();
-    LSM303DLHC_sensor.ReadData();
+    // Считаем показания датчиков до запуска таймеров, чтобы задать первоначальные
+    // значения фильтров и чтобы не отправлять нулевые данные
+    sensor_L3GD20.ReadData();
+    sensor_LSM303DLHC.ReadData();
+    
     update_package_data();
+
+    acc_filter.set_initial_value(sensor_LSM303DLHC.acc_data);
+    gyro_filter.set_initial_value(sensor_L3GD20.gyro_data);
+    mag_filter.set_initial_value(sensor_LSM303DLHC.mag_data);
     
     // Запустим таймеры
     timer2.Start();
@@ -191,16 +197,16 @@ int main()
     // Основной цикл программы
     while (true)
     {
-        /* *********************************************
+        /* ***********************************************************************
         * Место для дальнейшего размещения кода проверки 
         * очереди поступивших команд и рассчётов текущей
         * координаты по данным с датчиков.
-        ********************************************* */
+        *********************************************************************** */
        
-        if (!command_manager.command_queue.is_empty()){
-            auto command = command_manager.command_queue.get();
-            command.execute();
-        }
+        // if (!command_manager.command_queue.is_empty()){
+        //     auto command = command_manager.command_queue.get();
+        //     command.execute();
+        // }
 
         switch (stage)
         {
@@ -219,8 +225,8 @@ void InitAll(){
     leds.Init();
     leds.LedsOn();
 
-    L3GD20_sensor.Init();
-    LSM303DLHC_sensor.Init();
+    sensor_L3GD20.Init();
+    sensor_LSM303DLHC.Init();
     Pin_PC1.InitPinExti();
     usart1.Init();
 
