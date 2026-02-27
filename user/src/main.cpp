@@ -13,7 +13,7 @@
 #include "USART.hpp"
 #include "GpioPort.hpp"
 #include "GpioPin.hpp"
-#include "SimpleKalman3dFilter.hpp"
+#include "SimpleKalmanFilter.hpp"
 #include "SensorsKalmanParams.hpp"
 
 // ----------------------------------------------------------------------------
@@ -44,6 +44,10 @@ __IO uint8_t buttonState;
 
 /* Defines ------------------------------------------------------------------*/
 #define IST_VECTORS_NUM     98
+
+#define RELEASE     1
+#define CALIBRATION 2
+
 #define PACKAGE_MODE    RELEASE
 // #define PACKAGE_MODE    CALIBRATION
 
@@ -83,9 +87,9 @@ STM_CppLib::STM_GPIO::GPIO_Pin_EXTI
 // ----------------------------------------------------------------------------
 
 // Делитель 50 подобран опытным путём
-SimpleKalman3dFilter acc_filter(LSM303DLHC_acc_variance / 50, LSM303DLHC_acc_variance);
-SimpleKalman3dFilter gyro_filter(L3GD20_gyro_variance   / 50, L3GD20_gyro_variance);
-SimpleKalman3dFilter mag_filter(LSM303DLHC_mag_variance / 50, LSM303DLHC_mag_variance);
+SimpleKalmanFilter<TriaxialData> acc_filter(LSM303DLHC_acc_variance / 50, LSM303DLHC_acc_variance);
+SimpleKalmanFilter<TriaxialData> gyro_filter(L3GD20_gyro_variance   / 50, L3GD20_gyro_variance);
+SimpleKalmanFilter<TriaxialData> mag_filter(LSM303DLHC_mag_variance / 50, LSM303DLHC_mag_variance);
 
 // Пакет данных в формате "Гиронавт"
 #if PACKAGE_MODE == RELEASE
